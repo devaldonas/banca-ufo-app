@@ -1,0 +1,590 @@
+/* src.css - Tema Futurista UFO com Estrelas Rápidas */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --neon-green: #00ff9d;
+  --neon-red: #ff0055;
+  --neon-blue: #00d9ff;
+  --neon-purple: #9d00ff;
+  --dark-space: #0a0a12;
+  --space-gray: #1a1a2e;
+  --ufo-glow: 0 0 10px var(--neon-green), 0 0 20px var(--neon-green);
+  --red-glow: 0 0 10px var(--neon-red), 0 0 20px var(--neon-red);
+  --blue-glow: 0 0 10px var(--neon-blue), 0 0 20px var(--neon-blue);
+}
+
+body {
+  font-family: 'Rajdhani', 'Segoe UI', sans-serif;
+  background: 
+    radial-gradient(ellipse at top, var(--dark-space) 0%, #000000 100%),
+    radial-gradient(ellipse at bottom, #1a0033 0%, transparent 70%);
+  min-height: 100vh;
+  color: white;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* CÉU ESTRELADO COM MOVIMENTO RÁPIDO */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  background-image: 
+    radial-gradient(3px 3px at 10% 20%, white, transparent),
+    radial-gradient(2px 2px at 85% 45%, white, transparent),
+    radial-gradient(4px 4px at 30% 80%, white, transparent),
+    radial-gradient(2px 2px at 70% 15%, white, transparent),
+    radial-gradient(3px 3px at 95% 70%, white, transparent),
+    radial-gradient(2px 2px at 5% 55%, white, transparent),
+    radial-gradient(1px 1px at 50% 30%, white, transparent),
+    radial-gradient(3px 3px at 40% 90%, white, transparent),
+    radial-gradient(2px 2px at 60% 60%, white, transparent),
+    radial-gradient(1px 1px at 20% 10%, white, transparent),
+    radial-gradient(2px 2px at 90% 85%, white, transparent),
+    radial-gradient(3px 3px at 15% 40%, white, transparent),
+    radial-gradient(2px 2px at 80% 25%, white, transparent),
+    radial-gradient(1px 1px at 35% 65%, white, transparent),
+    radial-gradient(3px 3px at 65% 35%, white, transparent);
+  background-repeat: no-repeat;
+  animation: starsFloatFast 40s infinite linear;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  background-image: 
+    radial-gradient(1px 1px at 25% 35%, #fff, transparent),
+    radial-gradient(1px 1px at 75% 25%, #fff, transparent),
+    radial-gradient(1px 1px at 45% 75%, #fff, transparent),
+    radial-gradient(1px 1px at 85% 60%, #fff, transparent),
+    radial-gradient(1px 1px at 15% 85%, #fff, transparent),
+    radial-gradient(1px 1px at 65% 15%, #fff, transparent),
+    radial-gradient(1px 1px at 35% 50%, #fff, transparent),
+    radial-gradient(1px 1px at 95% 95%, #fff, transparent),
+    radial-gradient(1px 1px at 5% 5%, #fff, transparent),
+    radial-gradient(1px 1px at 55% 45%, #fff, transparent),
+    radial-gradient(1px 1px at 10% 70%, #fff, transparent),
+    radial-gradient(1px 1px at 90% 30%, #fff, transparent),
+    radial-gradient(1px 1px at 40% 20%, #fff, transparent),
+    radial-gradient(1px 1px at 60% 80%, #fff, transparent),
+    radial-gradient(1px 1px at 30% 90%, #fff, transparent),
+    radial-gradient(1px 1px at 70% 10%, #fff, transparent),
+    radial-gradient(1px 1px at 25% 55%, #fff, transparent),
+    radial-gradient(1px 1px at 75% 45%, #fff, transparent);
+  background-repeat: no-repeat;
+  animation: starsFloatVeryFast 25s infinite linear;
+}
+
+@keyframes starsFloatFast {
+  0% { transform: translate(0, 0) rotate(0deg); opacity: 0.9; }
+  12.5% { transform: translate(-50px, 25px) rotate(1deg); opacity: 0.7; }
+  25% { transform: translate(40px, -30px) rotate(2deg); opacity: 0.9; }
+  37.5% { transform: translate(-30px, 40px) rotate(-1deg); opacity: 0.6; }
+  50% { transform: translate(60px, -20px) rotate(3deg); opacity: 0.8; }
+  62.5% { transform: translate(-40px, 35px) rotate(-2deg); opacity: 0.7; }
+  75% { transform: translate(30px, -40px) rotate(1deg); opacity: 0.9; }
+  87.5% { transform: translate(-35px, 20px) rotate(-1deg); opacity: 0.6; }
+  100% { transform: translate(0, 0) rotate(0deg); opacity: 0.9; }
+}
+
+@keyframes starsFloatVeryFast {
+  0% { transform: translate(0, 0) rotate(0deg); opacity: 0.7; }
+  16.6% { transform: translate(80px, -25px) rotate(2deg); opacity: 0.5; }
+  33.3% { transform: translate(-40px, 60px) rotate(-2deg); opacity: 0.9; }
+  50% { transform: translate(70px, -35px) rotate(3deg); opacity: 0.6; }
+  66.6% { transform: translate(-60px, 40px) rotate(-3deg); opacity: 0.8; }
+  83.3% { transform: translate(50px, -50px) rotate(2deg); opacity: 0.5; }
+  100% { transform: translate(0, 0) rotate(0deg); opacity: 0.7; }
+}
+/* TÍTULOS E TEXTOS EM NEON */
+.neon-text {
+  font-family: 'Orbitron', monospace;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--neon-green);
+  text-shadow: 
+    0 0 5px var(--neon-green),
+    0 0 10px var(--neon-green),
+    0 0 20px var(--neon-green);
+  animation: neonFlicker 3s infinite alternate;
+}
+
+.neon-text-red {
+  color: var(--neon-red);
+  text-shadow: 
+    0 0 5px var(--neon-red),
+    0 0 10px var(--neon-red),
+    0 0 20px var(--neon-red);
+  animation: neonFlickerRed 2.5s infinite alternate;
+}
+
+/* CONTINUAÇÃO - Letras Neon */
+.neon-text-blue {
+  color: var(--neon-blue);
+  text-shadow: 
+    0 0 5px var(--neon-blue),
+    0 0 10px var(--neon-blue),
+    0 0 20px var(--neon-blue);
+  animation: neonFlickerBlue 3.5s infinite alternate;
+}
+
+/* Efeito de flicker para neon */
+@keyframes neonFlicker {
+  0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+    text-shadow: 
+      0 0 5px var(--neon-green),
+      0 0 10px var(--neon-green),
+      0 0 20px var(--neon-green),
+      0 0 40px var(--neon-green);
+    opacity: 1;
+  }
+  20%, 24%, 55% {
+    text-shadow: none;
+    opacity: 0.8;
+  }
+}
+
+@keyframes neonFlickerRed {
+  0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+    text-shadow: 
+      0 0 5px var(--neon-red),
+      0 0 10px var(--neon-red),
+      0 0 20px var(--neon-red),
+      0 0 40px var(--neon-red);
+    opacity: 1;
+  }
+  20%, 24%, 55% {
+    text-shadow: none;
+    opacity: 0.8;
+  }
+}
+
+@keyframes neonFlickerBlue {
+  0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+    text-shadow: 
+      0 0 5px var(--neon-blue),
+      0 0 10px var(--neon-blue),
+      0 0 20px var(--neon-blue),
+      0 0 40px var(--neon-blue);
+    opacity: 1;
+  }
+  20%, 24%, 55% {
+    text-shadow: none;
+    opacity: 0.8;
+  }
+}
+
+/* TIPOGRAFIA GERAL */
+h1 {
+  font-size: 3.5rem;
+  font-weight: 800;
+  margin-bottom: 1.5rem;
+}
+
+h2 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 1.25rem;
+}
+
+h3 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+p, span, div {
+  font-family: 'Rajdhani', sans-serif;
+  letter-spacing: 0.5px;
+}
+
+.text-glow {
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+/* ABAS TRANSPARENTES COM BORDAS NEON */
+.tabs-container {
+  position: relative;
+  z-index: 10;
+  background: transparent;
+  padding: 1rem;
+}
+
+.tab-nav {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  position: relative;
+}
+
+.tab-button {
+  background: transparent;
+  border: 2px solid rgba(0, 255, 157, 0.3);
+  border-bottom: none;
+  color: var(--neon-green);
+  padding: 0.75rem 1.5rem;
+  font-family: 'Orbitron', monospace;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.3s ease;
+  border-radius: 12px 12px 0 0;
+  backdrop-filter: blur(5px);
+}
+
+.tab-button::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  height: 2px;
+  background: var(--neon-green);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.tab-button:hover {
+  color: white;
+  border-color: var(--neon-green);
+  box-shadow: 0 0 15px rgba(0, 255, 157, 0.3);
+}
+
+.tab-button.active {
+  color: white;
+  border-color: var(--neon-green);
+  background: rgba(0, 255, 157, 0.1);
+  box-shadow: 
+    0 0 20px rgba(0, 255, 157, 0.4),
+    inset 0 0 20px rgba(0, 255, 157, 0.1);
+}
+
+.tab-button.active::before {
+  opacity: 1;
+}
+
+/* Abas Anunciante (vermelho) */
+.tab-button.announcer {
+  border-color: rgba(255, 0, 85, 0.3);
+  color: var(--neon-red);
+}
+
+.tab-button.announcer:hover {
+  border-color: var(--neon-red);
+  box-shadow: 0 0 15px rgba(255, 0, 85, 0.3);
+}
+
+.tab-button.announcer.active {
+  border-color: var(--neon-red);
+  background: rgba(255, 0, 85, 0.1);
+  box-shadow: 
+    0 0 20px rgba(255, 0, 85, 0.4),
+    inset 0 0 20px rgba(255, 0, 85, 0.1);
+}
+
+/* Abas Jornaleiro (azul) */
+.tab-button.newsstand {
+  border-color: rgba(0, 217, 255, 0.3);
+  color: var(--neon-blue);
+}
+
+.tab-button.newsstand:hover {
+  border-color: var(--neon-blue);
+  box-shadow: 0 0 15px rgba(0, 217, 255, 0.3);
+}
+
+.tab-button.newsstand.active {
+  border-color: var(--neon-blue);
+  background: rgba(0, 217, 255, 0.1);
+  box-shadow: 
+    0 0 20px rgba(0, 217, 255, 0.4),
+    inset 0 0 20px rgba(0, 217, 255, 0.1);
+}
+
+/* CONTEÚDO DAS ABAS */
+.tab-content {
+  background: rgba(26, 26, 46, 0.4);
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(0, 255, 157, 0.2);
+  border-radius: 0 12px 12px 12px;
+  padding: 2rem;
+  min-height: 500px;
+  position: relative;
+  overflow: hidden;
+}
+
+.tab-content::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(0, 255, 157, 0.05) 0%,
+    rgba(0, 217, 255, 0.05) 50%,
+    rgba(255, 0, 85, 0.05) 100%
+  );
+  z-index: -1;
+}
+
+.tab-content.announcer {
+  border-color: rgba(255, 0, 85, 0.2);
+}
+
+.tab-content.announcer::before {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 0, 85, 0.05) 0%,
+    rgba(157, 0, 255, 0.05) 50%,
+    rgba(0, 255, 157, 0.05) 100%
+  );
+}
+
+.tab-content.newsstand {
+  border-color: rgba(0, 217, 255, 0.2);
+}
+
+.tab-content.newsstand::before {
+  background: linear-gradient(
+    135deg,
+    rgba(0, 217, 255, 0.05) 0%,
+    rgba(0, 255, 157, 0.05) 50%,
+    rgba(255, 0, 85, 0.05) 100
+  );
+}
+
+/* BOTÕES NEON */
+.btn-neon {
+  background: transparent;
+  border: 2px solid var(--neon-green);
+  color: var(--neon-green);
+  padding: 0.75rem 2rem;
+  font-family: 'Orbitron', monospace;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(5px);
+}
+
+.btn-neon::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(0, 255, 157, 0.3), 
+    transparent);
+  transition: left 0.5s ease;
+}
+
+.btn-neon:hover::before {
+  left: 100%;
+}
+
+.btn-neon:hover {
+  background: rgba(0, 255, 157, 0.1);
+  box-shadow: var(--ufo-glow);
+  transform: translateY(-2px);
+}
+
+.btn-neon-red {
+  border-color: var(--neon-red);
+  color: var(--neon-red);
+}
+
+.btn-neon-red:hover {
+  background: rgba(255, 0, 85, 0.1);
+  box-shadow: var(--red-glow);
+}
+
+.btn-neon-blue {
+  border-color: var(--neon-blue);
+  color: var(--neon-blue);
+}
+
+.btn-neon-blue:hover {
+  background: rgba(0, 217, 255, 0.1);
+  box-shadow: var(--blue-glow);
+}
+
+/* INPUTS NEON */
+.neon-input {
+  background: rgba(26, 26, 46, 0.6);
+  border: 1px solid rgba(0, 255, 157, 0.3);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  color: white;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(5px);
+}
+
+.neon-input:focus {
+  outline: none;
+  border-color: var(--neon-green);
+  box-shadow: 0 0 15px rgba(0, 255, 157, 0.3);
+}
+
+.neon-input-red {
+  border-color: rgba(255, 0, 85, 0.3);
+}
+
+.neon-input-red:focus {
+  border-color: var(--neon-red);
+  box-shadow: 0 0 15px rgba(255, 0, 85, 0.3);
+}
+
+.neon-input-blue {
+  border-color: rgba(0, 217, 255, 0.3);
+}
+
+.neon-input-blue:focus {
+  border-color: var(--neon-blue);
+  box-shadow: 0 0 15px rgba(0, 217, 255, 0.3);
+}
+
+/* CARDS DE REVISTAS */
+.magazine-card {
+  background: rgba(26, 26, 46, 0.5);
+  border: 1px solid rgba(0, 255, 157, 0.2);
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+}
+
+.magazine-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(0, 255, 157, 0.1), 
+    transparent);
+  transition: left 0.5s ease;
+}
+
+.magazine-card:hover::before {
+  left: 100%;
+}
+
+.magazine-card:hover {
+  border-color: var(--neon-green);
+  box-shadow: var(--ufo-glow);
+  transform: translateY(-5px);
+}
+
+/* LOGO UFO */
+.ufo-logo {
+  filter: drop-shadow(0 0 10px var(--neon-green)) 
+          drop-shadow(0 0 20px var(--neon-green));
+  animation: ufoFloat 6s ease-in-out infinite;
+}
+
+@keyframes ufoFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* SCROLLBAR ESTILIZADA */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(26, 26, 46, 0.5);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, 
+    var(--neon-green), 
+    var(--neon-blue));
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, 
+    var(--neon-green), 
+    var(--neon-purple));
+}
+
+/* RESPONSIVIDADE */
+@media (max-width: 768px) {
+  h1 {
+    font-size: 2.5rem;
+  }
+  
+  h2 {
+    font-size: 2rem;
+  }
+  
+  .tab-nav {
+    flex-direction: column;
+  }
+  
+  .tab-button {
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+  }
+  
+  .tab-content {
+    padding: 1.5rem;
+    min-height: 400px;
+  }
+}
+
+/* UTILITÁRIOS */
+.glass-effect {
+  background: rgba(26, 26, 46, 0.4);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.text-shadow-neon {
+  text-shadow: 0 0 10px currentColor;
+}
+
+.hover-glow:hover {
+  box-shadow: 0 0 20px currentColor;
+}

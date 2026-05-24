@@ -1,0 +1,147 @@
+/* neon.css - Classes de efeito neon */
+
+:root {
+  --neon-green: #00ff9d;
+  --neon-red: #ff0055;
+  --neon-blue: #00d9ff;
+  --neon-purple: #9d00ff;
+}
+
+/* Textos neon */
+.text-neon-green {
+  color: var(--neon-green);
+  text-shadow: 
+    0 0 5px var(--neon-green),
+    0 0 10px var(--neon-green),
+    0 0 20px var(--neon-green);
+  animation: neonFlickerGreen 3s infinite alternate;
+}
+
+.text-neon-red {
+  color: var(--neon-red);
+  text-shadow: 
+    0 0 5px var(--neon-red),
+    0 0 10px var(--neon-red),
+    0 0 20px var(--neon-red);
+  animation: neonFlickerRed 2.5s infinite alternate;
+}
+
+.text-neon-blue {
+  color: var(--neon-blue);
+  text-shadow: 
+    0 0 5px var(--neon-blue),
+    0 0 10px var(--neon-blue),
+    0 0 20px var(--neon-blue);
+  animation: neonFlickerBlue 3.5s infinite alternate;
+}
+
+/* Bordas neon */
+.border-neon-green {
+  border-color: var(--neon-green);
+  box-shadow: 
+    0 0 10px var(--neon-green),
+    0 0 20px var(--neon-green);
+}
+
+.border-neon-red {
+  border-color: var(--neon-red);
+  box-shadow: 
+    0 0 10px var(--neon-red),
+    0 0 20px var(--neon-red);
+}
+
+.border-neon-blue {
+  border-color: var(--neon-blue);
+  box-shadow: 
+    0 0 10px var(--neon-blue),
+    0 0 20px var(--neon-blue);
+}
+
+/* Animações de flicker */
+@keyframes neonFlickerGreen {
+  0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+    text-shadow: 
+      0 0 5px var(--neon-green),
+      0 0 10px var(--neon-green),
+      0 0 20px var(--neon-green),
+      0 0 40px var(--neon-green);
+    opacity: 1;
+  }
+  20%, 24%, 55% {
+    text-shadow: none;
+    opacity: 0.8;
+  }
+}
+
+@keyframes neonFlickerRed {
+  0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+    text-shadow: 
+      0 0 5px var(--neon-red),
+      0 0 10px var(--neon-red),
+      0 0 20px var(--neon-red),
+      0 0 40px var(--neon-red);
+    opacity: 1;
+  }
+  20%, 24%, 55% {
+    text-shadow: none;
+    opacity: 0.8;
+  }
+}
+
+@keyframes neonFlickerBlue {
+  0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+    text-shadow: 
+      0 0 5px var(--neon-blue),
+      0 0 10px var(--neon-blue),
+      0 0 20px var(--neon-blue),
+      0 0 40px var(--neon-blue);
+    opacity: 1;
+  }
+  20%, 24%, 55% {
+    text-shadow: none;
+    opacity: 0.8;
+  }
+}
+
+/* Botões neon */
+.btn-neon-green {
+  background: transparent;
+  border: 2px solid var(--neon-green);
+  color: var(--neon-green);
+  transition: all 0.3s ease;
+}
+
+.btn-neon-green:hover {
+  background: rgba(0, 255, 157, 0.1);
+  box-shadow: 
+    0 0 15px var(--neon-green),
+    0 0 30px var(--neon-green);
+}
+
+.btn-neon-red {
+  background: transparent;
+  border: 2px solid var(--neon-red);
+  color: var(--neon-red);
+  transition: all 0.3s ease;
+}
+
+.btn-neon-red:hover {
+  background: rgba(255, 0, 85, 0.1);
+  box-shadow: 
+    0 0 15px var(--neon-red),
+    0 0 30px var(--neon-red);
+}
+
+.btn-neon-blue {
+  background: transparent;
+  border: 2px solid var(--neon-blue);
+  color: var(--neon-blue);
+  transition: all 0.3s ease;
+}
+
+.btn-neon-blue:hover {
+  background: rgba(0, 217, 255, 0.1);
+  box-shadow: 
+    0 0 15px var(--neon-blue),
+    0 0 30px var(--neon-blue);
+}

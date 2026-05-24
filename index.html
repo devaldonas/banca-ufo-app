@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Banca UFO - Revista Brasileira de Ufologia</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        background: radial-gradient(ellipse at bottom, #0a0a1a 0%, #030310 100%);
+        min-height: 100vh;
+        color: white;
+        font-family: 'Rajdhani', sans-serif;
+        position: relative;
+      }
+
+      /* Estrelas piscantes */
+      @keyframes twinkle {
+        0%, 100% { opacity: 0.3; }
+        50% { opacity: 1; }
+      }
+
+      /* Camada de estrelas */
+      body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: 
+          radial-gradient(2px 2px at 5% 10%, #fff, rgba(0,0,0,0)),
+          radial-gradient(1px 1px at 15% 35%, #fff, rgba(0,0,0,0)),
+          radial-gradient(3px 2px at 25% 55%, #fff, rgba(0,0,0,0)),
+          radial-gradient(1px 1px at 35% 75%, #fff, rgba(0,0,0,0)),
+          radial-gradient(2px 2px at 45% 15%, #fff, rgba(0,0,0,0)),
+          radial-gradient(1px 1px at 55% 45%, #fff, rgba(0,0,0,0)),
+          radial-gradient(3px 2px at 65% 85%, #fff, rgba(0,0,0,0)),
+          radial-gradient(1px 1px at 75% 25%, #fff, rgba(0,0,0,0)),
+          radial-gradient(2px 2px at 85% 65%, #fff, rgba(0,0,0,0)),
+          radial-gradient(1px 1px at 95% 5%, #fff, rgba(0,0,0,0)),
+          radial-gradient(2px 2px at 8% 50%, #fff, rgba(0,0,0,0)),
+          radial-gradient(1px 1px at 18% 80%, #fff, rgba(0,0,0,0)),
+          radial-gradient(3px 2px at 28% 20%, #fff, rgba(0,0,0,0)),
+          radial-gradient(1px 1px at 38% 60%, #fff, rgba(0,0,0,0)),
+          radial-gradient(2px 2px at 48% 90%, #fff, rgba(0,0,0,0)),
+          radial-gradient(1px 1px at 58% 30%, #fff, rgba(0,0,0,0)),
+          radial-gradient(3px 2px at 68% 70%, #fff, rgba(0,0,0,0)),
+          radial-gradient(1px 1px at 78% 40%, #fff, rgba(0,0,0,0)),
+          radial-gradient(2px 2px at 88% 10%, #fff, rgba(0,0,0,0)),
+          radial-gradient(1px 1px at 98% 95%, #fff, rgba(0,0,0,0));
+        background-repeat: no-repeat;
+        pointer-events: none;
+        z-index: 0;
+        animation: twinkle 4s ease-in-out infinite;
+      }
+
+      h1, h2, h3, h4, h5, h6 {
+        font-family: 'Orbitron', monospace;
+      }
+
+      /* Estilo para as abas - SEM FUNDO BRANCO */
+      .aba-ativa {
+        background: rgba(255, 255, 255, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        color: white;
+      }
+
+      .aba-inativa {
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: rgba(255, 255, 255, 0.6);
+      }
+
+      .aba-inativa:hover {
+        background: rgba(255, 255, 255, 0.08);
+        color: white;
+      }
+
+      /* Cards estilo glass */
+      .card-glass {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 1rem;
+        transition: all 0.3s ease;
+      }
+
+      .card-glass:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.3);
+        transform: translateY(-5px);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/client/src/main.tsx"></script>
+  </body>
+</html>
