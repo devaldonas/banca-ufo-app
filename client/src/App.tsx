@@ -1,320 +1,433 @@
 import { useState, useEffect } from 'react';
-
-interface CartItem {
-  id: number;
-  title: string;
-  price: number;
-  image: string;
-  quantity: number;
-  description: string;
-}
+import { supabase } from './lib/supabase';
 
 function App() {
+  // ==================== TODOS OS HOOKS AQUI (dentro da função) ====================
   const [activeTab, setActiveTab] = useState<'loja' | 'anunciante' | 'jornaleiro'>('loja');
-  const [cart, setCart] = useState<CartItem[]>([]);
-  const [isCartOpen, setIsCartOpen] = useState(false);
-  const [stars, setStars] = useState<JSX.Element[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [showPixModal, setShowPixModal] = useState(false);
-  const [pixData, setPixData] = useState({ qrCode: '', copyPaste: '', paymentUrl: '' });
+  const [step, setStep] = useState<'loja' | 'formato' | 'endereco' | 'pagamento'>('loja');
+  const [formato, setFormato] = useState<'fisico' | 'digital'>('fisico');
+  const [endereco, setEndereco] = useState({ cep: '', rua: '', numero: '', complemento: '', bairro: '', cidade: '', uf: '' });
+  const [pixModal, setPixModal] = useState(false);
+  
+  // Autenticação
+  const [user, setUser] = useState<any>(null);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [isLogin, setIsLogin] = useState(true);
+  // ====================================================================
 
-  const products = [
-    { id: 1, title: 'Edição 49 - 1988', price: 39.90, image: '/images/edicao49.jpg', description: 'Edição Histórica + Poster' },
-    { id: 2, title: 'Edição 27', price: 39.90, image: '/images/edicao27.jpg', description: 'Os segredos do Pentágono' },
-    { id: 3, title: 'Edição Atual', price: 39.90, image: '/images/edicaoatual.jpg', description: 'Um novo tempo se inicia!' },
-  ];
+  const preco = formato === 'fisico' ? 39.90 : 19.90;
 
+  // Efeito para verificar sessão
   useEffect(() => {
-    const starElements = [];
-    for (let i = 0; i < 150; i++) {
-      const size = Math.random() * 2 + 1;
-      const left = Math.random() * 100;
-      const top = Math.random() * 100;
-      const duration = Math.random() * 3 + 1;
-      const delay = Math.random() * 5;
-      
-      starElements.push(
-        <div
-          key={i}
-          className="star-dynamic"
-          style={{
-            width: `${size}px`,
-            height: `${size}px`,
-            left: `${left}%`,
-            top: `${top}%`,
-            animation: `twinkle ${duration}s ease-in-out infinite`,
-            animationDelay: `${delay}s`,
-          }}
-        />
-      );
-    }
-    setStars(starElements);
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  const addToCart = (product: typeof products[0]) => {
-    setCart(prevCart => {
-      const existingItem = prevCart.find(item => item.id === product.id);
-      if (existingItem) {
-        return prevCart.map(item =>
-          item.id === product.id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        );
-      }
-      return [...prevCart, { ...product, quantity: 1, image: product.image }];
-    });
-  };
-
-  const removeFromCart = (id: number) => {
-    setCart(prevCart => prevCart.filter(item => item.id !== id));
-  };
-
-  const updateQuantity = (id: number, quantity: number) => {
-    if (quantity <= 0) {
-      removeFromCart(id);
-      return;
-    }
-    setCart(prevCart =>
-      prevCart.map(item =>
-        item.id === id ? { ...item, quantity } : item
-      )
-    );
-  };
-
-  const getTotal = () => {
-    return cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  };
-
-  const getItemCount = () => {
-    return cart.reduce((sum, item) => sum + item.quantity, 0);
-  };
-
-  const handleCheckout = async () => {
-    if (cart.length === 0) return;
-    
-    setIsLoading(true);
-    
-    try {
-      const response = await fetch('/api/create-pix', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          items: cart.map(item => ({
-            title: item.title,
-            quantity: item.quantity,
-            price: item.price,
-          })),
-          total: getTotal(),
-          description: `Compra Banca UFO - ${cart.length} itens`,
-        }),
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (isLogin) {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: loginEmail,
+        password: loginPassword,
       });
-      
-      const data = await response.json();
-      
-      if (data.success) {
-        setPixData({
-          qrCode: data.qrCode,
-          copyPaste: data.copyPaste,
-          paymentUrl: data.paymentUrl,
-        });
-        setShowPixModal(true);
-        setIsCartOpen(false);
-      } else {
-        alert('Erro ao gerar pagamento. Tente novamente.');
+      if (error) alert(error.message);
+      else setShowLoginModal(false);
+    } else {
+      const { error } = await supabase.auth.signUp({
+        email: loginEmail,
+        password: loginPassword,
+      });
+      if (error) alert(error.message);
+      else {
+        alert('Cadastro realizado! Verifique seu e-mail.');
+        setShowLoginModal(false);
       }
-    } catch (error) {
-      console.error('Erro:', error);
-      alert('Erro de conexão. Tente novamente.');
-    } finally {
-      setIsLoading(false);
     }
   };
 
-  return (
-    <div className="min-h-screen relative overflow-hidden">
-      <div className="fixed inset-0 pointer-events-none z-0">{stars}</div>
-      
-      <header className="sticky top-0 z-50">
-        <div className="container-custom py-6">
-          <div className="flex items-center justify-between flex-wrap gap-4">
-            <div className="flex items-center gap-4">
-              <img 
-                src="/images/logo.png" 
-                alt="Banca UFO Logo" 
-                className="ufo-logo w-12 h-12 object-contain"
-                onError={(e) => { e.currentTarget.style.display = 'none'; }}
-              />
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+  };
+
+  const handleEnderecoChange = (campo: string, valor: string) => {
+    setEndereco({ ...endereco, [campo]: valor });
+  };
+
+  const handleFinalizarPedido = () => {
+    setPixModal(true);
+  };
+
+  const containerStyle = { maxWidth: '1000px', margin: '0 auto', padding: '40px 24px' };
+  const cardStyle = { background: 'rgba(10, 20, 35, 0.6)', backdropFilter: 'blur(12px)', borderRadius: '20px', padding: '32px', border: '1px solid rgba(255,255,255,0.08)' };
+  const inputStyle = { width: '100%', padding: '14px', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '12px', color: 'white', fontSize: '14px', outline: 'none' };
+  const buttonStyle = { width: '100%', padding: '14px', background: '#ff4444', color: 'white', border: 'none', borderRadius: '40px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer' };
+  const buttonOutlineStyle = { width: '100%', padding: '14px', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '40px', color: 'white', cursor: 'pointer', marginTop: '12px' };
+
+  // Tela da Loja
+  if (step === 'loja' && activeTab === 'loja') {
+    return (
+      <div style={{ background: 'radial-gradient(ellipse at bottom, #030c1a 0%, #010308 100%)', minHeight: '100vh' }}>
+        {/* Header */}
+        <div style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <img 
+              src="/images/logo.png" 
+              alt="Banca UFO Logo" 
+              style={{ width: '40px', height: '40px', objectFit: 'contain' }}
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+                const parent = e.currentTarget.parentElement;
+                if (parent) {
+                  const span = document.createElement('span');
+                  span.style.fontSize = '28px';
+                  span.innerHTML = '🛸';
+                  parent.prepend(span);
+                }
+              }}
+            />
+            <div>
+              <h1 style={{ fontSize: '20px', fontWeight: 'bold', margin: 0, color: 'white' }}>BANCA UFO</h1>
+              <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', margin: 0 }}>Revista Brasileira de Ufologia</p>
+            </div>
+          </div>
+          
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+            <button style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: 'rgba(255,255,255,0.6)' }}>🔍</button>
+            {user ? (
+              <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                <span style={{ color: 'white', fontSize: '14px' }}>Olá, {user.email?.split('@')[0]}</span>
+                <button onClick={handleLogout} style={{ padding: '8px 20px', background: '#333', border: 'none', borderRadius: '30px', color: 'white', cursor: 'pointer' }}>SAIR</button>
+              </div>
+            ) : (
+              <button 
+                onClick={() => setShowLoginModal(true)}
+                style={{ 
+                  padding: '8px 24px', 
+                  background: '#e60000', 
+                  border: 'none', 
+                  borderRadius: '30px', 
+                  color: 'white', 
+                  fontSize: '14px', 
+                  fontWeight: 'bold', 
+                  cursor: 'pointer',
+                  boxShadow: '0 0 10px #ff0000, 0 0 5px #ff4444',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = '#ff0000';
+                  e.currentTarget.style.boxShadow = '0 0 20px #ff0000, 0 0 10px #ff6666';
+                  e.currentTarget.style.transform = 'scale(1.02)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = '#e60000';
+                  e.currentTarget.style.boxShadow = '0 0 10px #ff0000, 0 0 5px #ff4444';
+                  e.currentTarget.style.transform = 'scale(1)';
+                }}
+              >
+                ENTRAR
+              </button>
+            )}
+          </div>
+        </div>
+
+        <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '40px 24px' }}>
+          <div style={{ background: 'rgba(10, 20, 35, 0.6)', backdropFilter: 'blur(12px)', borderRadius: '24px', padding: '32px', marginBottom: '48px', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', alignItems: 'start' }}>
+              <div style={{ textAlign: 'center', animation: 'float 4s ease-in-out infinite' }}>
+                <img src="/images/edicaoatual.jpg" alt="Capa" style={{ width: '100%', maxWidth: '280px', borderRadius: '12px', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }} />
+              </div>
               <div>
-                <h1 className="neon-text text-3xl md:text-4xl">
-                  BANCA <span className="text-white">UFO</span>
-                </h1>
-                <p className="text-white/60 text-sm">Revista Brasileira de Ufologia</p>
-              </div>
-            </div>
-            
-            <button 
-              onClick={() => setIsCartOpen(true)}
-              className="relative btn-neon flex items-center gap-2 px-4 py-2"
-            >
-              🛒
-              {getItemCount() > 0 && (
-                <span className="absolute -top-2 -right-2 bg-neon-green text-black rounded-full w-5 h-5 text-xs flex items-center justify-center font-bold">
-                  {getItemCount()}
-                </span>
-              )}
-              <span className="hidden md:inline">Carrinho</span>
-            </button>
-          </div>
-        </div>
-      </header>
-
-      <div className="container-custom">
-        <div className="tab-nav">
-          <button onClick={() => setActiveTab('loja')} className={`tab-button ${activeTab === 'loja' ? 'active' : ''}`}>🛸 LOJA</button>
-          <button onClick={() => setActiveTab('anunciante')} className={`tab-button announcer ${activeTab === 'anunciante' ? 'active' : ''}`}>📢 ANUNCIANTE</button>
-          <button onClick={() => setActiveTab('jornaleiro')} className={`tab-button newsstand ${activeTab === 'jornaleiro' ? 'active' : ''}`}>📰 JORNALEIRO</button>
-        </div>
-
-        {activeTab === 'loja' && (
-          <div className="tab-content">
-            <div className="text-center mb-12">
-              <h2 className="neon-text text-4xl">✨ EDIÇÃO ATUAL ✨</h2>
-              <p className="text-white/60 mt-2">A revista mais aguardada do ano está aqui!</p>
-            </div>
-            <div className="grid md:grid-cols-3 gap-6">
-              {products.map((product) => (
-                <div key={product.id} className="magazine-card">
-                  <div className="w-full h-48 rounded-lg overflow-hidden mb-4 bg-white/5 flex items-center justify-center">
-                    <img src={product.image} alt={product.title} className="w-full h-full object-cover" onError={(e) => { e.currentTarget.style.display = 'none'; const p = e.currentTarget.parentElement; if(p) p.innerHTML = '<span class="text-6xl">🛸</span>'; }} />
-                  </div>
-                  <h3 className="text-xl font-bold text-white mb-2">{product.title}</h3>
-                  <p className="text-white/50 text-sm mb-4">{product.description}</p>
-                  <div className="flex items-center justify-between mt-4 pt-4 border-t border-white/10">
-                    <span className="text-2xl font-bold text-neon-green">R$ {product.price.toFixed(2)}</span>
-                    <button onClick={() => addToCart(product)} className="btn-neon text-sm px-4 py-2">ADICIONAR</button>
-                  </div>
-                  <p className="text-xs text-white/30 mt-3">📦 Frete grátis</p>
+                <h2 style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '8px', background: 'linear-gradient(135deg, #00d4ff, #0088ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>UFO Magazine</h2>
+                <p style={{ color: 'rgba(255,255,255,0.5)', marginBottom: '20px' }}>Edição #42 · Junho 2026</p>
+                <p style={{ color: 'rgba(255,255,255,0.7)', lineHeight: '1.5', marginBottom: '24px' }}>
+                  A edição mais aguardada do ano traz uma cobertura exclusiva sobre os últimos avanços em tecnologia espacial.
+                </p>
+                <div style={{ marginBottom: '24px' }}>
+                  <h3 style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '16px', background: 'linear-gradient(135deg, #00d4ff, #0088ff, #00d4ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', letterSpacing: '2px' }}>✦ EDIÇÃO ATUAL ✦</h3>
+                  <p style={{ fontWeight: 'bold', marginBottom: '12px', color: 'white' }}>DESTAQUES DESTA EDIÇÃO:</p>
+                  <ul style={{ color: 'rgba(255,255,255,0.6)', paddingLeft: '20px', lineHeight: '1.6' }}>
+                    <li>Entrevista exclusiva com ex-piloto da NASA</li>
+                    <li>Os 10 avistamentos mais intrigantes de 2025</li>
+                    <li>Tecnologia alienígena: fato ou ficção?</li>
+                    <li>A nova corrida espacial privada</li>
+                  </ul>
                 </div>
-              ))}
+                <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '20px' }}>
+                  <div style={{ display: 'flex', gap: '32px', marginBottom: '20px' }}>
+                    <div><p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>Físico</p><p style={{ fontSize: '24px', fontWeight: 'bold', color: 'white' }}>R$ 39,90</p></div>
+                    <div><p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>Digital</p><p style={{ fontSize: '24px', fontWeight: 'bold', color: 'white' }}>R$ 19,90</p></div>
+                  </div>
+                  <button onClick={() => setStep('formato')} style={{ width: '100%', padding: '14px', background: '#ff4444', color: 'white', border: 'none', borderRadius: '40px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer' }}>COMPRAR EDIÇÃO</button>
+                </div>
+              </div>
             </div>
           </div>
-        )}
 
-        {activeTab === 'anunciante' && (
-          <div className="tab-content announcer">
-            <div className="text-center mb-8">
-              <h2 className="neon-text-red text-3xl">📢 PUBLIQUE NA UFO</h2>
-              <p className="text-white/60">Alcance milhares de leitores apaixonados por ufologia</p>
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
+              <h3 style={{ fontSize: '18px', fontWeight: 'bold', margin: 0, background: 'linear-gradient(135deg, #00d4ff, #0088ff, #00d4ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', letterSpacing: '1px' }}>✦ EDIÇÕES ANTERIORES ✦</h3>
+              <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.05)', padding: '4px 12px', borderRadius: '20px' }}>Mostrando 2 de 5 edições</span>
             </div>
-            <div className="glass-effect rounded-xl p-6">
-              <h3 className="font-bold text-2xl text-neon-red mb-6 text-center">Media Kit</h3>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center p-4 bg-white/5 rounded-lg border border-white/10"><span>📱 Leitores mensais</span><span className="font-bold text-2xl text-neon-red">50.000+</span></div>
-                <div className="flex justify-between items-center p-4 bg-white/5 rounded-lg border border-white/10"><span>📰 Tiragem impressa</span><span className="font-bold text-2xl text-neon-red">5.000</span></div>
-                <div className="flex justify-between items-center p-4 bg-white/5 rounded-lg border border-white/10"><span>🎯 Alcance digital</span><span className="font-bold text-2xl text-neon-red">100.000+</span></div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px' }}>
+              <div style={{ background: 'rgba(10, 20, 35, 0.5)', backdropFilter: 'blur(8px)', borderRadius: '16px', padding: '20px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                <div style={{ width: '100%', height: '200px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', marginBottom: '16px', overflow: 'hidden' }}>
+                  <img src="/images/edicao49.jpg" alt="Edição 49" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                </div>
+                <h4 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '4px', color: 'white' }}>Edição 49 - 1988</h4>
+                <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px', marginBottom: '16px' }}>Edição histórica com poster exclusivo</p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '20px', fontWeight: 'bold', color: 'white' }}>R$ 39,90</span>
+                  <button onClick={() => setStep('formato')} style={{ padding: '8px 20px', background: 'rgba(255,68,68,0.9)', color: 'white', border: 'none', borderRadius: '30px', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer' }}>COMPRAR</button>
+                </div>
               </div>
-              <button className="w-full mt-8 btn-neon-red py-3 rounded-full font-bold">SOLICITAR MEDIA KIT</button>
+              <div style={{ background: 'rgba(10, 20, 35, 0.5)', backdropFilter: 'blur(8px)', borderRadius: '16px', padding: '20px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                <div style={{ width: '100%', height: '200px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', marginBottom: '16px', overflow: 'hidden' }}>
+                  <img src="/images/edicao27.jpg" alt="Edição 27" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                </div>
+                <h4 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '4px', color: 'white' }}>Edição 27</h4>
+                <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px', marginBottom: '16px' }}>Os segredos ufológicos do Pentágono</p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '20px', fontWeight: 'bold', color: 'white' }}>R$ 39,90</span>
+                  <button onClick={() => setStep('formato')} style={{ padding: '8px 20px', background: 'rgba(255,68,68,0.9)', color: 'white', border: 'none', borderRadius: '30px', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer' }}>COMPRAR</button>
+                </div>
+              </div>
+              <div style={{ background: 'rgba(10, 20, 35, 0.5)', backdropFilter: 'blur(8px)', borderRadius: '16px', padding: '20px', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', minHeight: '320px' }}>
+                <span style={{ fontSize: '48px', opacity: 0.5 }}>🛸</span>
+                <p style={{ color: 'rgba(255,255,255,0.4)', marginTop: '16px' }}>Em breve</p>
+              </div>
             </div>
           </div>
-        )}
+        </div>
 
-        {activeTab === 'jornaleiro' && (
-          <div className="tab-content newsstand">
-            <div className="text-center mb-8">
-              <h2 className="neon-text-blue text-3xl">📰 SEJA UM JORNALEIRO PARCEIRO</h2>
-              <p className="text-white/60">Faça parte da maior rede de distribuição de revistas UFO</p>
-            </div>
-            <div className="glass-effect rounded-xl p-6">
-              <div className="grid md:grid-cols-2 gap-6 mb-8">
-                <div className="text-center p-4 bg-white/5 rounded-lg border border-white/10"><div className="text-4xl mb-2">💰</div><div className="font-bold text-xl text-neon-blue">50% de comissão</div></div>
-                <div className="text-center p-4 bg-white/5 rounded-lg border border-white/10"><div className="text-4xl mb-2">📦</div><div className="font-bold text-xl text-neon-blue">Lotes consignados</div></div>
-              </div>
-              <form className="space-y-4">
-                <input type="text" placeholder="Nome da Banca" className="neon-input neon-input-blue w-full" />
-                <input type="text" placeholder="CNPJ/CPF" className="neon-input neon-input-blue w-full" />
-                <input type="text" placeholder="Endereço completo" className="neon-input neon-input-blue w-full" />
-                <input type="email" placeholder="E-mail" className="neon-input neon-input-blue w-full" />
-                <button className="w-full btn-neon-blue py-3 rounded-full font-bold">QUERO SER PARCEIRO</button>
+        <style>{`
+          @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+          }
+        `}</style>
+
+        <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '20px', textAlign: 'center', marginTop: '40px' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '48px', marginBottom: '16px' }}>
+            <span onClick={() => { setActiveTab('loja'); setStep('loja'); }} style={{ fontWeight: 'bold', color: 'white', cursor: 'pointer' }}>🛸 LOJA</span>
+            <span onClick={() => setActiveTab('anunciante')} style={{ color: 'rgba(255,255,255,0.4)', cursor: 'pointer' }}>📢 ANUNCIANTE</span>
+            <span onClick={() => setActiveTab('jornaleiro')} style={{ color: 'rgba(255,255,255,0.4)', cursor: 'pointer' }}>📰 JORNALEIRO</span>
+          </div>
+          <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.2)' }}>Banca UFO - Revista Brasileira de Ufologia</p>
+        </div>
+
+        {/* Modal de Login */}
+        {showLoginModal && (
+          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={() => setShowLoginModal(false)}>
+            <div style={{ background: '#1a1a2a', borderRadius: '20px', padding: '32px', maxWidth: '400px', width: '90%', border: '1px solid rgba(255,255,255,0.1)' }} onClick={(e) => e.stopPropagation()}>
+              <h2 style={{ fontSize: '24px', marginBottom: '24px', color: 'white', textAlign: 'center' }}>{isLogin ? 'ENTRAR' : 'CADASTRAR'}</h2>
+              <form onSubmit={handleLogin}>
+                <input type="email" placeholder="E-mail" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} style={{ width: '100%', padding: '12px', marginBottom: '16px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '8px', color: 'white' }} required />
+                <input type="password" placeholder="Senha" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} style={{ width: '100%', padding: '12px', marginBottom: '24px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '8px', color: 'white' }} required />
+                <button type="submit" style={{ width: '100%', padding: '12px', background: '#e60000', border: 'none', borderRadius: '30px', color: 'white', fontWeight: 'bold', cursor: 'pointer', marginBottom: '12px', boxShadow: '0 0 10px #ff0000' }}>{isLogin ? 'ENTRAR' : 'CADASTRAR'}</button>
               </form>
+              <button onClick={() => setIsLogin(!isLogin)} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.6)', cursor: 'pointer', width: '100%', textAlign: 'center' }}>{isLogin ? 'Criar conta' : 'Já tenho conta'}</button>
+              <button onClick={() => setShowLoginModal(false)} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', marginTop: '16px', width: '100%', textAlign: 'center' }}>Fechar</button>
             </div>
           </div>
         )}
       </div>
+    );
+  }
 
-      {/* Modal do Carrinho */}
-      {isCartOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-end bg-black/50 backdrop-blur-sm" onClick={() => setIsCartOpen(false)}>
-          <div className="glass-effect w-full max-w-md h-full overflow-y-auto rounded-l-2xl" onClick={(e) => e.stopPropagation()}>
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="neon-text text-2xl">🛒 SEU CARRINHO</h2>
-                <button onClick={() => setIsCartOpen(false)} className="text-white/60 hover:text-white text-2xl">✕</button>
-              </div>
-              {cart.length === 0 ? (
-                <div className="text-center py-12"><p className="text-white/60 text-lg">Seu carrinho está vazio</p><p className="text-white/40 text-sm mt-2">Adicione algumas revistas!</p></div>
-              ) : (
-                <>
-                  <div className="space-y-4 mb-6">
-                    {cart.map((item) => (
-                      <div key={item.id} className="flex gap-4 p-4 bg-white/5 rounded-lg border border-white/10">
-                        <div className="w-16 h-20 rounded-lg overflow-hidden bg-white/5 flex-shrink-0"><img src={item.image} alt={item.title} className="w-full h-full object-cover" onError={(e) => { e.currentTarget.style.display = 'none'; }} /></div>
-                        <div className="flex-1">
-                          <h3 className="text-white font-bold">{item.title}</h3>
-                          <p className="text-neon-green text-sm">R$ {item.price.toFixed(2)}</p>
-                          <div className="flex items-center gap-2 mt-2">
-                            <button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="btn-neon text-xs px-2 py-1">-</button>
-                            <span className="text-white w-8 text-center">{item.quantity}</span>
-                            <button onClick={() => updateQuantity(item.id, item.quantity + 1)} className="btn-neon text-xs px-2 py-1">+</button>
-                            <button onClick={() => removeFromCart(item.id)} className="text-red-400 text-xs ml-auto hover:text-red-300">Remover</button>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="border-t border-white/20 pt-4">
-                    <div className="flex justify-between mb-4"><span className="text-white/80">Total:</span><span className="neon-text text-2xl">R$ {getTotal().toFixed(2)}</span></div>
-                    <button onClick={handleCheckout} disabled={isLoading} className="btn-neon w-full py-3 text-lg font-bold disabled:opacity-50">
-                      {isLoading ? '🔄 GERANDO PIX...' : '💚 FINALIZAR COMPRA'}
-                    </button>
-                    <p className="text-xs text-white/30 text-center mt-4">Aceitamos PIX, Cartão de Crédito e Boleto</p>
-                  </div>
-                </>
-              )}
-            </div>
+  // Tela ANUNCIANTE
+  if (activeTab === 'anunciante') {
+    return (
+      <div style={{ background: 'radial-gradient(ellipse at bottom, #030c1a 0%, #010308 100%)', minHeight: '100vh' }}>
+        <div style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <img src="/images/logo.png" alt="Logo" style={{ width: '40px', height: '40px', objectFit: 'contain' }} />
+            <div><h1 style={{ fontSize: '20px', fontWeight: 'bold', margin: 0, color: 'white' }}>BANCA UFO</h1><p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', margin: 0 }}>Revista Brasileira de Ufologia</p></div>
           </div>
-        </div>
-      )}
-
-      {/* Modal do PIX */}
-      {showPixModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm" onClick={() => setShowPixModal(false)}>
-          <div className="glass-effect rounded-2xl p-8 max-w-md w-full mx-4 text-center" onClick={(e) => e.stopPropagation()}>
-            <h2 className="neon-text text-2xl mb-4">💚 PAGAR COM PIX</h2>
-            {pixData.qrCode && (
-              <div className="bg-white p-4 rounded-xl inline-block mb-4">
-                <img src={pixData.qrCode} alt="QR Code PIX" className="w-48 h-48 mx-auto" />
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+            <button style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: 'rgba(255,255,255,0.6)' }}>🔍</button>
+            {user ? (
+              <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                <span style={{ color: 'white', fontSize: '14px' }}>Olá, {user.email?.split('@')[0]}</span>
+                <button onClick={handleLogout} style={{ padding: '8px 20px', background: '#333', border: 'none', borderRadius: '30px', color: 'white', cursor: 'pointer' }}>SAIR</button>
               </div>
+            ) : (
+              <button onClick={() => setShowLoginModal(true)} style={{ padding: '8px 24px', background: '#e60000', border: 'none', borderRadius: '30px', color: 'white', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 0 10px #ff0000' }}>ENTRAR</button>
             )}
-            <p className="text-white/60 text-sm mb-4">Escaneie o QR Code com seu banco ou use o código abaixo:</p>
-            <div className="bg-black/50 p-3 rounded-lg mb-4">
-              <code className="text-neon-green text-xs break-all">{pixData.copyPaste}</code>
-            </div>
-            <button onClick={() => navigator.clipboard.writeText(pixData.copyPaste)} className="btn-neon w-full mb-3 py-2">📋 COPIAR CÓDIGO</button>
-            <a href={pixData.paymentUrl} target="_blank" rel="noopener noreferrer" className="btn-neon w-full py-2 text-center inline-block">💳 PAGAR NO MERCADO PAGO</a>
-            <button onClick={() => setShowPixModal(false)} className="text-white/40 text-sm mt-4 hover:text-white/60">Fechar</button>
           </div>
         </div>
-      )}
+        <div style={containerStyle}>
+          <div style={cardStyle}>
+            <h2 style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '16px', background: 'linear-gradient(135deg, #00d4ff, #0088ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>Área do Anunciante</h2>
+            <p style={{ color: 'rgba(255,255,255,0.7)', marginBottom: '32px' }}>Publique sua marca na revista de maior credibilidade do segmento.</p>
+            <div style={{ display: 'grid', gap: '24px', marginBottom: '32px' }}>
+              <div style={{ padding: '20px', background: 'rgba(255,255,255,0.05)', borderRadius: '16px' }}><div style={{ fontSize: '32px', marginBottom: '8px' }}>📊</div><div style={{ fontWeight: 'bold', color: 'white' }}>50.000+ leitores mensais</div><div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '14px' }}>Alcance nacional</div></div>
+              <div style={{ padding: '20px', background: 'rgba(255,255,255,0.05)', borderRadius: '16px' }}><div style={{ fontSize: '32px', marginBottom: '8px' }}>📰</div><div style={{ fontWeight: 'bold', color: 'white' }}>Tiragem de 5.000 exemplares</div><div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '14px' }}>Distribuição em todo Brasil</div></div>
+            </div>
+            <button style={buttonStyle}>SOLICITAR MEDIA KIT</button>
+          </div>
+        </div>
+        <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '20px', textAlign: 'center', marginTop: '40px' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '48px', marginBottom: '16px' }}>
+            <span onClick={() => { setActiveTab('loja'); setStep('loja'); }} style={{ color: 'rgba(255,255,255,0.4)', cursor: 'pointer' }}>🛸 LOJA</span>
+            <span onClick={() => setActiveTab('anunciante')} style={{ fontWeight: 'bold', color: 'white', cursor: 'pointer' }}>📢 ANUNCIANTE</span>
+            <span onClick={() => setActiveTab('jornaleiro')} style={{ color: 'rgba(255,255,255,0.4)', cursor: 'pointer' }}>📰 JORNALEIRO</span>
+          </div>
+          <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.2)' }}>Banca UFO - Revista Brasileira de Ufologia</p>
+        </div>
+      </div>
+    );
+  }
 
-      <style>{`
-        .star-dynamic { position: absolute; background: white; border-radius: 50%; pointer-events: none; opacity: 0.5; }
-        @keyframes twinkle { 0%, 100% { opacity: 0.2; } 50% { opacity: 0.8; } }
-        .text-neon-green { color: var(--neon-green); }
-      `}</style>
-    </div>
-  );
+  // Tela JORNALEIRO
+  if (activeTab === 'jornaleiro') {
+    return (
+      <div style={{ background: 'radial-gradient(ellipse at bottom, #030c1a 0%, #010308 100%)', minHeight: '100vh' }}>
+        <div style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <img src="/images/logo.png" alt="Logo" style={{ width: '40px', height: '40px', objectFit: 'contain' }} />
+            <div><h1 style={{ fontSize: '20px', fontWeight: 'bold', margin: 0, color: 'white' }}>BANCA UFO</h1><p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', margin: 0 }}>Revista Brasileira de Ufologia</p></div>
+          </div>
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+            <button style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: 'rgba(255,255,255,0.6)' }}>🔍</button>
+            {user ? (
+              <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                <span style={{ color: 'white', fontSize: '14px' }}>Olá, {user.email?.split('@')[0]}</span>
+                <button onClick={handleLogout} style={{ padding: '8px 20px', background: '#333', border: 'none', borderRadius: '30px', color: 'white', cursor: 'pointer' }}>SAIR</button>
+              </div>
+            ) : (
+              <button onClick={() => setShowLoginModal(true)} style={{ padding: '8px 24px', background: '#e60000', border: 'none', borderRadius: '30px', color: 'white', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 0 10px #ff0000' }}>ENTRAR</button>
+            )}
+          </div>
+        </div>
+        <div style={containerStyle}>
+          <div style={cardStyle}>
+            <h2 style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '16px', background: 'linear-gradient(135deg, #00d4ff, #0088ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>Área do Jornaleiro</h2>
+            <p style={{ color: 'rgba(255,255,255,0.7)', marginBottom: '32px' }}>Faça parte da maior rede de distribuição de revistas UFO.</p>
+            <div style={{ display: 'grid', gap: '24px', marginBottom: '32px' }}>
+              <div style={{ padding: '20px', background: 'rgba(255,255,255,0.05)', borderRadius: '16px' }}><div style={{ fontSize: '32px', marginBottom: '8px' }}>💰</div><div style={{ fontWeight: 'bold', color: 'white' }}>50% de comissão</div><div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '14px' }}>Ganhe em cada exemplar vendido</div></div>
+              <div style={{ padding: '20px', background: 'rgba(255,255,255,0.05)', borderRadius: '16px' }}><div style={{ fontSize: '32px', marginBottom: '8px' }}>📦</div><div style={{ fontWeight: 'bold', color: 'white' }}>Lotes consignados</div><div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '14px' }}>Receba sem custo inicial</div></div>
+            </div>
+            <button style={buttonStyle}>QUERO SER PARCEIRO</button>
+          </div>
+        </div>
+        <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '20px', textAlign: 'center', marginTop: '40px' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '48px', marginBottom: '16px' }}>
+            <span onClick={() => { setActiveTab('loja'); setStep('loja'); }} style={{ color: 'rgba(255,255,255,0.4)', cursor: 'pointer' }}>🛸 LOJA</span>
+            <span onClick={() => setActiveTab('anunciante')} style={{ color: 'rgba(255,255,255,0.4)', cursor: 'pointer' }}>📢 ANUNCIANTE</span>
+            <span onClick={() => setActiveTab('jornaleiro')} style={{ fontWeight: 'bold', color: 'white', cursor: 'pointer' }}>📰 JORNALEIRO</span>
+          </div>
+          <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.2)' }}>Banca UFO - Revista Brasileira de Ufologia</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Tela de Formato
+  if (step === 'formato') {
+    return (
+      <div style={{ background: 'radial-gradient(ellipse at bottom, #030c1a 0%, #010308 100%)', minHeight: '100vh' }}>
+        <div style={containerStyle}>
+          <div style={cardStyle}>
+            <div style={{ display: 'flex', gap: '24px', alignItems: 'center', marginBottom: '24px' }}>
+              <img src="/images/edicaoatual.jpg" alt="Capa" style={{ width: '80px', height: '100px', objectFit: 'cover', borderRadius: '8px' }} />
+              <div><h2 style={{ fontSize: '22px', fontWeight: 'bold', margin: 0, background: 'linear-gradient(135deg, #00d4ff, #0088ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>UFO Magazine</h2><p style={{ color: 'rgba(255,255,255,0.5)', margin: 0 }}>Edição #42 · Junho 2026</p></div>
+            </div>
+            <p style={{ fontWeight: 'bold', marginBottom: '16px', color: 'white' }}>FORMATO</p>
+            <div style={{ display: 'flex', gap: '16px', marginBottom: '32px' }}>
+              <button onClick={() => setFormato('fisico')} style={{ flex: 1, padding: '20px', border: formato === 'fisico' ? '2px solid #ff4444' : '1px solid rgba(255,255,255,0.15)', background: formato === 'fisico' ? 'rgba(255,68,68,0.1)' : 'rgba(255,255,255,0.03)', borderRadius: '16px', cursor: 'pointer' }}>
+                <div style={{ fontSize: '32px' }}>📖</div>
+                <div style={{ fontWeight: 'bold', color: formato === 'fisico' ? '#ff4444' : 'white' }}>Físico</div>
+                <div style={{ fontSize: '20px', fontWeight: 'bold', color: 'white' }}>R$ 39,90</div>
+              </button>
+              <button onClick={() => setFormato('digital')} style={{ flex: 1, padding: '20px', border: formato === 'digital' ? '2px solid #ff4444' : '1px solid rgba(255,255,255,0.15)', background: formato === 'digital' ? 'rgba(255,68,68,0.1)' : 'rgba(255,255,255,0.03)', borderRadius: '16px', cursor: 'pointer' }}>
+                <div style={{ fontSize: '32px' }}>💻</div>
+                <div style={{ fontWeight: 'bold', color: formato === 'digital' ? '#ff4444' : 'white' }}>Digital</div>
+                <div style={{ fontSize: '20px', fontWeight: 'bold', color: 'white' }}>R$ 19,90</div>
+              </button>
+            </div>
+            <p style={{ fontWeight: 'bold', marginBottom: '12px', color: 'white' }}>DESTAQUES</p>
+            <ul style={{ color: 'rgba(255,255,255,0.6)', paddingLeft: '20px', lineHeight: '1.6', marginBottom: '32px' }}>
+              <li>Entrevista exclusiva com ex-piloto da NASA</li><li>Os 10 avistamentos mais intrigantes de 2025</li><li>Tecnologia alienígena: fato ou ficção?</li><li>A nova corrida espacial privada</li><li>Missão Artemis: bastidores revelados</li>
+            </ul>
+            <button onClick={() => setStep('endereco')} style={buttonStyle}>COMPRAR POR R$ {preco.toFixed(2)}</button>
+            <button onClick={() => { setStep('loja'); setActiveTab('loja'); }} style={buttonOutlineStyle}>← Voltar</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Tela de Endereço
+  if (step === 'endereco') {
+    return (
+      <div style={{ background: 'radial-gradient(ellipse at bottom, #030c1a 0%, #010308 100%)', minHeight: '100vh' }}>
+        <div style={containerStyle}>
+          <div style={cardStyle}>
+            <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '24px', background: 'linear-gradient(135deg, #00d4ff, #0088ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>Endereço de Entrega</h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <input type="text" placeholder="CEP" value={endereco.cep} onChange={(e) => handleEnderecoChange('cep', e.target.value)} style={inputStyle} />
+              <input type="text" placeholder="Rua / Avenida" value={endereco.rua} onChange={(e) => handleEnderecoChange('rua', e.target.value)} style={inputStyle} />
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <input type="text" placeholder="Número" value={endereco.numero} onChange={(e) => handleEnderecoChange('numero', e.target.value)} style={inputStyle} />
+                <input type="text" placeholder="Complemento" value={endereco.complemento} onChange={(e) => handleEnderecoChange('complemento', e.target.value)} style={inputStyle} />
+              </div>
+              <input type="text" placeholder="Bairro" value={endereco.bairro} onChange={(e) => handleEnderecoChange('bairro', e.target.value)} style={inputStyle} />
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <input type="text" placeholder="Cidade" value={endereco.cidade} onChange={(e) => handleEnderecoChange('cidade', e.target.value)} style={inputStyle} />
+                <input type="text" placeholder="UF" value={endereco.uf} onChange={(e) => handleEnderecoChange('uf', e.target.value)} style={inputStyle} />
+              </div>
+            </div>
+            <button onClick={() => setStep('pagamento')} style={{ ...buttonStyle, marginTop: '32px' }}>CONTINUAR</button>
+            <button onClick={() => setStep('formato')} style={buttonOutlineStyle}>← Voltar</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Tela de Pagamento
+  if (step === 'pagamento') {
+    return (
+      <div style={{ background: 'radial-gradient(ellipse at bottom, #030c1a 0%, #010308 100%)', minHeight: '100vh' }}>
+        <div style={containerStyle}>
+          <div style={cardStyle}>
+            <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '8px', background: 'linear-gradient(135deg, #00d4ff, #0088ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>Pagamento</h2>
+            <p style={{ color: 'rgba(255,255,255,0.5)', marginBottom: '24px' }}>UFO Magazine - {formato === 'fisico' ? 'Físico' : 'Digital'}</p>
+            <div style={{ border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '20px', marginBottom: '24px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}><span style={{ fontSize: '24px' }}>💳</span><div><div style={{ fontWeight: 'bold', color: 'white' }}>Pix</div><div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)' }}>QR Code + Cópia e Cola</div></div></div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderTop: '1px solid rgba(255,255,255,0.1)' }}><span>Subtotal</span><span>R$ {preco.toFixed(2)}</span></div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0' }}><span>Frete (PAC)</span><span>R$ 0,00</span></div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '16px 0', borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: '8px' }}><span style={{ fontWeight: 'bold' }}>Total</span><span style={{ fontWeight: 'bold' }}>R$ {preco.toFixed(2)}</span></div>
+            </div>
+            <button onClick={handleFinalizarPedido} style={buttonStyle}>CONFIRMAR PEDIDO · R$ {preco.toFixed(2)}</button>
+            <button onClick={() => setStep('endereco')} style={buttonOutlineStyle}>← Voltar</button>
+          </div>
+        </div>
+        {pixModal && (
+          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={() => setPixModal(false)}>
+            <div style={{ background: '#0a0f1a', borderRadius: '20px', padding: '32px', maxWidth: '400px', width: '90%', textAlign: 'center', border: '1px solid rgba(255,255,255,0.1)' }} onClick={(e) => e.stopPropagation()}>
+              <h2 style={{ fontSize: '22px', marginBottom: '16px', background: 'linear-gradient(135deg, #00d4ff, #0088ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>💚 PAGAR COM PIX</h2>
+              <div style={{ background: 'white', padding: '20px', borderRadius: '12px', marginBottom: '16px' }}><img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=teste" alt="QR Code" style={{ width: '160px' }} /></div>
+              <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)', marginBottom: '16px' }}>Escaneie o QR Code com seu banco</p>
+              <button style={{ width: '100%', padding: '12px', background: '#ff4444', color: 'white', border: 'none', borderRadius: '30px', cursor: 'pointer', fontWeight: 'bold' }}>📋 COPIAR CÓDIGO</button>
+              <button onClick={() => setPixModal(false)} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)', marginTop: '16px', cursor: 'pointer' }}>Fechar</button>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  return null;
 }
 
 export default App;
