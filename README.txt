@@ -1,0 +1,8 @@
+supabase banca-ufo
+959fcp6kHk/xF$8
+
+anon
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5aXVxdmFtY3V2dWJidXd5ZWRkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2NDIwODcsImV4cCI6MjA5NTIxODA4N30.59LJ-kh3UK4ny9vXlMgeL9h0L-MB6bWqzGmNC-lgKRg
+
+url
+https://fyiuqvamcuvubbuwyedd.supabase.co
