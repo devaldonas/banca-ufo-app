@@ -392,83 +392,83 @@ function App() {
                 <p style={{ color: 'rgba(255,255,255,0.6)', maxWidth: '500px', margin: '0 auto' }}>Faça parte da maior rede de distribuição de revistas de ficção científica e fenômenos do Brasil.</p>
               </div>
 
-                            {/* Cards de Benefícios - Centralizados e com tamanho igual */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '24px', marginBottom: '48px' }}>
+                                          {/* Cards de Benefícios - Responsivo (2 colunas no mobile) */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px', marginBottom: '48px' }}>
                 {/* Comissão de 50% */}
-                <div style={{ background: 'rgba(0, 255, 136, 0.1)', borderRadius: '16px', padding: '24px', border: '1px solid rgba(0, 255, 136, 0.3)', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '180px' }}>
-                  <div style={{ marginBottom: '12px' }}>
-                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#00ff88" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+                <div style={{ background: 'rgba(0, 255, 136, 0.1)', borderRadius: '16px', padding: '16px', border: '1px solid rgba(0, 255, 136, 0.3)', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ marginBottom: '8px' }}>
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#00ff88" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
                       <circle cx="12" cy="12" r="10"/>
                       <text x="12" y="17" textAnchor="middle" fill="#00ff88" stroke="none" fontSize="14" fontWeight="bold">$</text>
                     </svg>
                   </div>
-                  <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#00ff88', marginBottom: '8px' }}>Comissão de 50%</div>
-                  <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '14px' }}>Ganhe em cada exemplar vendido</div>
+                  <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#00ff88', marginBottom: '4px' }}>Comissão de 50%</div>
+                  <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '12px' }}>Ganhe em cada exemplar vendido</div>
                 </div>
 
                 {/* Lotes Consignados */}
-                <div style={{ background: 'rgba(0, 255, 136, 0.1)', borderRadius: '16px', padding: '24px', border: '1px solid rgba(0, 255, 136, 0.3)', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '180px' }}>
-                  <div style={{ marginBottom: '12px' }}>
-                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#00ff88" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+                <div style={{ background: 'rgba(0, 255, 136, 0.1)', borderRadius: '16px', padding: '16px', border: '1px solid rgba(0, 255, 136, 0.3)', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ marginBottom: '8px' }}>
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#00ff88" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M20 7h-4.18A3 3 0 0 0 16 5.18V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v1.18A3 3 0 0 0 8.18 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Z"/>
                       <path d="M8 7h8"/>
                       <circle cx="12" cy="13" r="2"/>
                     </svg>
                   </div>
-                  <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#00ff88', marginBottom: '8px' }}>Lotes Consignados</div>
-                  <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '14px' }}>Receba sem custo inicial</div>
+                  <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#00ff88', marginBottom: '4px' }}>Lotes Consignados</div>
+                  <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '12px' }}>Receba sem custo inicial</div>
                 </div>
 
                 {/* Entrega Gratuita */}
-                <div style={{ background: 'rgba(0, 255, 136, 0.1)', borderRadius: '16px', padding: '24px', border: '1px solid rgba(0, 255, 136, 0.3)', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '180px' }}>
-                  <div style={{ marginBottom: '12px' }}>
-                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#00ff88" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+                <div style={{ background: 'rgba(0, 255, 136, 0.1)', borderRadius: '16px', padding: '16px', border: '1px solid rgba(0, 255, 136, 0.3)', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ marginBottom: '8px' }}>
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#00ff88" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
                       <rect x="1" y="4" width="15" height="13" rx="2"/>
                       <path d="M16 9h3a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-3"/>
                       <circle cx="6" cy="17" r="2"/>
                       <circle cx="16" cy="17" r="2"/>
                     </svg>
                   </div>
-                  <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#00ff88', marginBottom: '8px' }}>Entrega Gratuita</div>
-                  <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '14px' }}>Enviamos para sua banca</div>
+                  <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#00ff88', marginBottom: '4px' }}>Entrega Gratuita</div>
+                  <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '12px' }}>Enviamos para sua banca</div>
                 </div>
 
                 {/* Suporte Total */}
-                <div style={{ background: 'rgba(0, 255, 136, 0.1)', borderRadius: '16px', padding: '24px', border: '1px solid rgba(0, 255, 136, 0.3)', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '180px' }}>
-                  <div style={{ marginBottom: '12px' }}>
-                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#00ff88" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+                <div style={{ background: 'rgba(0, 255, 136, 0.1)', borderRadius: '16px', padding: '16px', border: '1px solid rgba(0, 255, 136, 0.3)', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ marginBottom: '8px' }}>
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#00ff88" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
                       <circle cx="12" cy="12" r="1.5" fill="#00ff88"/>
                     </svg>
                   </div>
-                  <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#00ff88', marginBottom: '8px' }}>Suporte Total</div>
-                  <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '14px' }}>Equipe dedicada para parceiros</div>
+                  <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#00ff88', marginBottom: '4px' }}>Suporte Total</div>
+                  <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '12px' }}>Equipe dedicada para parceiros</div>
                 </div>
               </div>
 
-              {/* Como Funciona - CENTRALIZADO */}
+              {/* Como Funciona - Responsivo (2 colunas no mobile, 4 no desktop) */}
               <div style={{ marginBottom: '48px' }}>
                 <h3 style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '24px', color: 'white', textAlign: 'center' }}>COMO FUNCIONA</h3>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', justifyItems: 'center', alignItems: 'start' }}>
-                  <div style={{ textAlign: 'center', maxWidth: '180px' }}>
-                    <div style={{ width: '56px', height: '56px', background: '#00ff88', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', color: '#0a0a1a', fontWeight: 'bold', fontSize: '22px' }}>01</div>
-                    <div style={{ fontWeight: 'bold', color: 'white', marginBottom: '8px' }}>Cadastro</div>
-                    <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px', lineHeight: '1.4' }}>Preencha o formulário de pré-cadastro</div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '24px', justifyItems: 'center', alignItems: 'start' }}>
+                  <div style={{ textAlign: 'center', maxWidth: '220px' }}>
+                    <div style={{ width: '48px', height: '48px', background: '#00ff88', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 10px', color: '#0a0a1a', fontWeight: 'bold', fontSize: '18px' }}>01</div>
+                    <div style={{ fontWeight: 'bold', color: 'white', marginBottom: '6px', fontSize: '14px' }}>Cadastro</div>
+                    <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '12px', lineHeight: '1.4' }}>Preencha o formulário de pré-cadastro</div>
                   </div>
-                  <div style={{ textAlign: 'center', maxWidth: '180px' }}>
-                    <div style={{ width: '56px', height: '56px', background: '#00ff88', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', color: '#0a0a1a', fontWeight: 'bold', fontSize: '22px' }}>02</div>
-                    <div style={{ fontWeight: 'bold', color: 'white', marginBottom: '8px' }}>Aprovação</div>
-                    <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px', lineHeight: '1.4' }}>Nossa equipe analisa em até 48h</div>
+                  <div style={{ textAlign: 'center', maxWidth: '220px' }}>
+                    <div style={{ width: '48px', height: '48px', background: '#00ff88', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 10px', color: '#0a0a1a', fontWeight: 'bold', fontSize: '18px' }}>02</div>
+                    <div style={{ fontWeight: 'bold', color: 'white', marginBottom: '6px', fontSize: '14px' }}>Aprovação</div>
+                    <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '12px', lineHeight: '1.4' }}>Nossa equipe analisa em até 48h</div>
                   </div>
-                  <div style={{ textAlign: 'center', maxWidth: '180px' }}>
-                    <div style={{ width: '56px', height: '56px', background: '#00ff88', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', color: '#0a0a1a', fontWeight: 'bold', fontSize: '22px' }}>03</div>
-                    <div style={{ fontWeight: 'bold', color: 'white', marginBottom: '8px' }}>Receba o Lote</div>
-                    <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px', lineHeight: '1.4' }}>Enviamos as revistas para sua banca</div>
+                  <div style={{ textAlign: 'center', maxWidth: '220px' }}>
+                    <div style={{ width: '48px', height: '48px', background: '#00ff88', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 10px', color: '#0a0a1a', fontWeight: 'bold', fontSize: '18px' }}>03</div>
+                    <div style={{ fontWeight: 'bold', color: 'white', marginBottom: '6px', fontSize: '14px' }}>Receba o Lote</div>
+                    <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '12px', lineHeight: '1.4' }}>Enviamos as revistas para sua banca</div>
                   </div>
-                  <div style={{ textAlign: 'center', maxWidth: '180px' }}>
-                    <div style={{ width: '56px', height: '56px', background: '#00ff88', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', color: '#0a0a1a', fontWeight: 'bold', fontSize: '22px' }}>04</div>
-                    <div style={{ fontWeight: 'bold', color: 'white', marginBottom: '8px' }}>Venda e Lucro</div>
-                    <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px', lineHeight: '1.4' }}>Reporte as vendas e receba sua comissão</div>
+                  <div style={{ textAlign: 'center', maxWidth: '220px' }}>
+                    <div style={{ width: '48px', height: '48px', background: '#00ff88', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 10px', color: '#0a0a1a', fontWeight: 'bold', fontSize: '18px' }}>04</div>
+                    <div style={{ fontWeight: 'bold', color: 'white', marginBottom: '6px', fontSize: '14px' }}>Venda e Lucro</div>
+                    <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '12px', lineHeight: '1.4' }}>Reporte as vendas e receba sua comissão</div>
                   </div>
                 </div>
               </div>
