@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from './lib/supabase';
 
 function App() {
-  const [activeTab, setActiveTab] = useState<'loja' | 'anunciante' | 'jornaleiro'>('loja');
+    const [activeTab, setActiveTab] = useState<'loja' | 'anunciante' | 'jornaleiro'>('loja');
   const [step, setStep] = useState<'loja' | 'formato' | 'endereco' | 'pagamento'>('loja');
   const [formato, setFormato] = useState<'fisico' | 'digital'>('fisico');
   const [endereco, setEndereco] = useState({ cep: '', rua: '', numero: '', complemento: '', bairro: '', cidade: '', uf: '' });
@@ -12,53 +12,104 @@ function App() {
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   const [isLogin, setIsLogin] = useState(true);
-  const [showAdmin, setShowAdmin] = useState(false);
+  const [showPanel, setShowPanel] = useState<'mediakit' | 'mypanel'>('mediakit');
+  const [showJornPanel, setShowJornPanel] = useState<'sobre' | 'mypanel'>('sobre');
   const [showJornForm, setShowJornForm] = useState(false);
   const [jornNome, setJornNome] = useState('');
   const [jornCnpj, setJornCnpj] = useState('');
   const [jornEndereco, setJornEndereco] = useState('');
   const [jornEmail, setJornEmail] = useState('');
   const [jornTelefone, setJornTelefone] = useState('');
-  const [cart, setCart] = useState<any[]>([]);
-  const [isCartOpen, setIsCartOpen] = useState(false);
-  const [showPanel, setShowPanel] = useState<'mediakit' | 'mypanel'>('mediakit');
-  const [showJornPanel, setShowJornPanel] = useState<'sobre' | 'mypanel'>('sobre');
+  const [showAdmin, setShowAdmin] = useState(false);
 
   const preco = formato === 'fisico' ? 39.90 : 19.90;
 
-  const products = [
-    { id: 1, title: 'Edição 49 - 1988', price: 39.90, image: '/images/edicao49.jpg', description: 'Edição histórica com poster exclusivo' },
-    { id: 2, title: 'Edição 27', price: 39.90, image: '/images/edicao27.jpg', description: 'Os segredos ufológicos do Pentágono' },
-    { id: 3, title: 'Edição Atual', price: 39.90, image: '/images/edicaoatual.jpg', description: 'Um novo tempo se inicia!' },
-  ];
+    const handleJornSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  
+  try {
+    const { data, error } = await supabase
+      .from('jornaleiros')
+      .insert([
+        {
+          nome_banca: jornNome,
+          cnpj_cpf: jornCnpj,
+          endereco: jornEndereco,
+          email: jornEmail,
+          telefone: jornTelefone,
+          status: 'pendente'
+        }
+      ]);
+    
+    if (error) throw error;
+    
+    alert('Cadastro enviado com sucesso! Entraremos em contato em até 48h.');
 
-  const addToCart = (product: any) => {
-    setCart(prev => {
-      const exists = prev.find(item => item.id === product.id);
-      if (exists) {
-        return prev.map(item => item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item);
-      }
-      return [...prev, { ...product, quantity: 1 }];
-    });
+    const fetchUserRole = async (userId: string) => {
+  const { data, error } = await supabase
+    .from('users')
+    .select('role')
+    .eq('id', userId)
+    .single();
+  
+  if (!error && data) {
+    return data.role;
+  }
+  return 'user';
+};
+    
+    // Limpar formulário
+    setJornNome('');
+    setJornCnpj('');
+    setJornEndereco('');
+    setJornEmail('');
+    setJornTelefone('');
+    setShowJornForm(false);
+    
+  } catch (error) {
+    console.error('Erro ao cadastrar:', error);
+    alert('Erro ao enviar cadastro. Tente novamente.');
+  }
+};
+
+    // Função para buscar o role do usuário na tabela users
+  const fetchUserRole = async (userId: string) => {
+    const { data, error } = await supabase
+      .from('users')
+      .select('role')
+      .eq('id', userId)
+      .single();
+    
+    if (!error && data) {
+      return data.role;
+    }
+    return 'user';
   };
+useEffect(() => {
+  supabase.auth.getSession().then(async ({ data: { session } }) => {
+    if (session?.user) {
+      const role = await fetchUserRole(session.user.id);
+      console.log('📌 Usuário logado:', session.user.email, '| Role:', role); // <-- ADICIONE ESTA LINHA
+      setUser({ ...session.user, role });
+    } else {
+      console.log('📌 Nenhum usuário logado');
+      setUser(null);
+    }
+  });
 
-  const removeFromCart = (id: number) => setCart(prev => prev.filter(item => item.id !== id));
-  const updateQuantity = (id: number, quantity: number) => {
-    if (quantity <= 0) { removeFromCart(id); return; }
-    setCart(prev => prev.map(item => item.id === id ? { ...item, quantity } : item));
-  };
-  const getTotal = () => cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const getItemCount = () => cart.reduce((sum, item) => sum + item.quantity, 0);
+  const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    if (session?.user) {
+      const role = await fetchUserRole(session.user.id);
+      console.log('📌 Auth mudou - Usuário:', session.user.email, '| Role:', role); // <-- ADICIONE ESTA LINHA
+      setUser({ ...session.user, role });
+    } else {
+      console.log('📌 Auth mudou - Usuário deslogado');
+      setUser(null);
+    }
+  });
 
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user || null);
-    });
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user || null);
-    });
-    return () => subscription.unsubscribe();
-  }, []);
+  return () => subscription.unsubscribe();
+}, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,11 +118,12 @@ function App() {
       if (error) {
         alert(error.message);
       } else {
-        alert('Login realizado!');
-        setUser(data.user);
+        // Buscar o role do usuário após login
+        if (data.user) {
+          const role = await fetchUserRole(data.user.id);
+          setUser({ ...data.user, role });
+        }
         setShowLoginModal(false);
-        setLoginEmail('');
-        setLoginPassword('');
       }
     } else {
       const { error } = await supabase.auth.signUp({ email: loginEmail, password: loginPassword });
@@ -80,13 +132,11 @@ function App() {
       } else {
         alert('Cadastro realizado! Verifique seu e-mail.');
         setShowLoginModal(false);
-        setLoginEmail('');
-        setLoginPassword('');
       }
     }
   };
 
-  const handleLogout = async () => { await supabase.auth.signOut(); setUser(null); };
+  const handleLogout = async () => { await supabase.auth.signOut(); };
 
   const handleEnderecoChange = (campo: string, valor: string) => {
     setEndereco({ ...endereco, [campo]: valor });
@@ -94,159 +144,137 @@ function App() {
 
   const handleFinalizarPedido = () => { setPixModal(true); };
 
-  const handleJornSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const { error } = await supabase.from('jornaleiros').insert([{
-        nome_banca: jornNome, cnpj_cpf: jornCnpj, endereco: jornEndereco, email: jornEmail, telefone: jornTelefone, status: 'pendente'
-      }]);
-      if (error) throw error;
-      alert('✅ Cadastro enviado! Entraremos em contato.');
-      setJornNome(''); setJornCnpj(''); setJornEndereco(''); setJornEmail(''); setJornTelefone(''); setShowJornForm(false);
-    } catch (error: any) { alert('❌ Erro ao enviar.'); }
-  };
-
   const containerStyle = { maxWidth: '1000px', margin: '0 auto', padding: '40px 24px' };
   const cardStyle = { background: 'rgba(10, 20, 35, 0.6)', backdropFilter: 'blur(12px)', borderRadius: '20px', padding: '32px', border: '1px solid rgba(255,255,255,0.08)' };
   const inputStyle = { width: '100%', padding: '14px', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '12px', color: 'white', fontSize: '14px', outline: 'none' };
   const buttonStyle = { width: '100%', padding: '14px', background: '#ff4444', color: 'white', border: 'none', borderRadius: '40px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer' };
   const buttonOutlineStyle = { width: '100%', padding: '14px', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '40px', color: 'white', cursor: 'pointer', marginTop: '12px' };
 
-  // Tela da Loja
+ 
+    // Tela da Loja
   if (step === 'loja' && activeTab === 'loja') {
     return (
       <div style={{ background: 'radial-gradient(ellipse at bottom, #030c1a 0%, #010308 100%)', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
         {/* Header */}
         <div style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <img src="/images/logo.png" alt="Logo" style={{ width: '40px', height: '40px', objectFit: 'contain' }} />
-            <div><h1 style={{ fontSize: '20px', fontWeight: 'bold', color: 'white' }}>BANCA UFO</h1><p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>Revista Brasileira de Ufologia</p></div>
+            <img src="/images/logo.png" alt="Banca UFO Logo" style={{ width: '40px', height: '40px', objectFit: 'contain' }} onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+            <div><h1 style={{ fontSize: '20px', fontWeight: 'bold', margin: 0, color: 'white' }}>BANCA UFO</h1><p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', margin: 0 }}>Revista Brasileira de Ufologia</p></div>
           </div>
           <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
             <button style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: 'rgba(255,255,255,0.6)' }}>🔍</button>
-            <button onClick={() => setIsCartOpen(true)} style={{ position: 'relative', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: 'white' }}>🛒 {getItemCount() > 0 && <span style={{ position: 'absolute', top: '-8px', right: '-12px', background: '#ff4444', borderRadius: '50%', width: '18px', height: '18px', fontSize: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{getItemCount()}</span>}</button>
+            
+            {/* Botão ADMIN */}
+            {user && (user as any).role === 'admin' && (
+              <button onClick={() => setShowAdmin(true)} style={{ padding: '8px 20px', background: '#00d4ff', border: 'none', borderRadius: '30px', color: '#0a0a1a', cursor: 'pointer', fontWeight: 'bold' }}>👑 ADMIN</button>
+            )}
+            
             {user ? (
               <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                <span style={{ color: 'white', fontSize: '14px' }}>👋 {user.email?.split('@')[0]}</span>
-                <button onClick={handleLogout} style={{ padding: '8px 20px', background: '#333', borderRadius: '30px', color: 'white', cursor: 'pointer' }}>SAIR</button>
+                <span style={{ color: 'white', fontSize: '14px' }}>Olá, {user.email?.split('@')[0]}</span>
+                <button onClick={handleLogout} style={{ padding: '8px 20px', background: '#333', border: 'none', borderRadius: '30px', color: 'white', cursor: 'pointer' }}>SAIR</button>
               </div>
             ) : (
-              <button onClick={() => setShowLoginModal(true)} style={{ padding: '8px 24px', background: '#e60000', borderRadius: '30px', color: 'white', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 0 10px #ff0000' }}>ENTRAR</button>
+              <button onClick={() => setShowLoginModal(true)} style={{ padding: '8px 24px', background: '#e60000', border: 'none', borderRadius: '30px', color: 'white', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 0 10px #ff0000' }}>ENTRAR</button>
             )}
           </div>
         </div>
 
-        {/* Conteúdo */}
-        <div style={{ flex: 1, padding: '40px 24px' }}>
-          {/* Capa */}
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '40px' }}>
+        {/* Conteúdo principal */}
+        <div style={{ flex: 1 }}>
+          {/* Capa centralizada */}
+          <div style={{ display: 'flex', justifyContent: 'center', padding: '40px 24px 20px' }}>
             <div style={{ width: '200px', animation: 'float 4s ease-in-out infinite' }}>
               <img src="/images/edicaoatual.jpg" alt="Capa" style={{ width: '100%', borderRadius: '12px', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }} />
             </div>
           </div>
 
-          <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-            <h2 style={{ fontSize: '28px', fontWeight: 'bold', textAlign: 'center', background: 'linear-gradient(135deg, #00d4ff, #0088ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>UFO Magazine</h2>
-            <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.5)' }}>Edição #42 · Junho 2026</p>
-            <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.7)', margin: '20px 0' }}>A edição mais aguardada do ano traz uma cobertura exclusiva sobre os últimos avanços em tecnologia espacial.</p>
-            
-            <div style={{ marginBottom: '24px' }}>
-              <h3 style={{ fontSize: '14px', fontWeight: 'bold', textAlign: 'center', background: 'linear-gradient(135deg, #00d4ff, #0088ff, #00d4ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>✦ EDIÇÃO ATUAL ✦</h3>
-              <p style={{ fontWeight: 'bold', textAlign: 'center', color: 'white', margin: '12px 0' }}>DESTAQUES DESTA EDIÇÃO:</p>
-              <ul style={{ color: 'rgba(255,255,255,0.6)', maxWidth: '400px', margin: '0 auto' }}>
-                <li>Entrevista exclusiva com ex-piloto da NASA</li>
-                <li>Os 10 avistamentos mais intrigantes de 2025</li>
-                <li>Tecnologia alienígena: fato ou ficção?</li>
-                <li>A nova corrida espacial privada</li>
-              </ul>
-            </div>
+          {/* Título e Destaques */}
+          <div style={{ padding: '0 24px' }}>
+            <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '24px' }}>
+              <h2 style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '8px', background: 'linear-gradient(135deg, #00d4ff, #0088ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', textAlign: 'left' }}>UFO Magazine</h2>
+              <p style={{ color: 'rgba(255,255,255,0.5)', marginBottom: '20px', textAlign: 'left' }}>Edição #42 · Junho 2026</p>
+              <p style={{ color: 'rgba(255,255,255,0.7)', lineHeight: '1.5', marginBottom: '24px', textAlign: 'left' }}>A edição mais aguardada do ano traz uma cobertura exclusiva sobre os últimos avanços em tecnologia espacial.</p>
 
-            <div style={{ display: 'flex', gap: '32px', justifyContent: 'center', margin: '20px 0', paddingTop: '20px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-              <div><p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>Físico</p><p style={{ fontSize: '24px', fontWeight: 'bold', color: 'white' }}>R$ 39,90</p></div>
-              <div><p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>Digital</p><p style={{ fontSize: '24px', fontWeight: 'bold', color: 'white' }}>R$ 19,90</p></div>
-            </div>
+              <div style={{ marginBottom: '24px' }}>
+                <h3 style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '16px', background: 'linear-gradient(135deg, #00d4ff, #0088ff, #00d4ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', letterSpacing: '2px', textAlign: 'left' }}>✦ EDIÇÃO ATUAL ✦</h3>
+                <p style={{ fontWeight: 'bold', marginBottom: '12px', color: 'white', textAlign: 'left' }}>DESTAQUES DESTA EDIÇÃO:</p>
+                <ul style={{ color: 'rgba(255,255,255,0.6)', paddingLeft: '20px', lineHeight: '1.6', textAlign: 'left' }}>
+                  <li>Entrevista exclusiva com ex-piloto da NASA</li>
+                  <li>Os 10 avistamentos mais intrigantes de 2025</li>
+                  <li>Tecnologia alienígena: fato ou ficção?</li>
+                  <li>A nova corrida espacial privada</li>
+                </ul>
+              </div>
 
-            <button onClick={() => setStep('formato')} style={{ width: '100%', padding: '14px', background: '#ff4444', color: 'white', border: 'none', borderRadius: '40px', fontWeight: 'bold', cursor: 'pointer' }}>COMPRAR EDIÇÃO</button>
+              <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '20px' }}>
+                <div style={{ display: 'flex', gap: '32px', marginBottom: '20px' }}>
+                  <div><p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>Físico</p><p style={{ fontSize: '24px', fontWeight: 'bold', color: 'white' }}>R$ 39,90</p></div>
+                  <div><p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>Digital</p><p style={{ fontSize: '24px', fontWeight: 'bold', color: 'white' }}>R$ 19,90</p></div>
+                </div>
+                <button onClick={() => setStep('formato')} style={{ width: '100%', padding: '14px', background: '#ff4444', color: 'white', border: 'none', borderRadius: '40px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer' }}>COMPRAR EDIÇÃO</button>
+              </div>
+            </div>
           </div>
 
-          {/* Edições Anteriores - Carrossel */}
-          <div style={{ marginTop: '60px' }}>
-            <h3 style={{ fontSize: '18px', fontWeight: 'bold', textAlign: 'center', background: 'linear-gradient(135deg, #00d4ff, #0088ff, #00d4ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', marginBottom: '24px' }}>✦ EDIÇÕES ANTERIORES ✦</h3>
-            <div style={{ display: 'flex', overflowX: 'auto', gap: '24px', paddingBottom: '16px' }}>
-              {products.slice(0, 2).map(p => (
-                <div key={p.id} style={{ flex: '0 0 280px', background: 'rgba(10, 20, 35, 0.5)', borderRadius: '16px', padding: '20px', textAlign: 'center' }}>
-                  <img src={p.image} alt={p.title} style={{ width: '100%', height: '200px', objectFit: 'cover', borderRadius: '12px', marginBottom: '16px' }} />
-                  <h4 style={{ color: 'white', marginBottom: '8px' }}>{p.title}</h4>
-                  <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '12px', marginBottom: '16px' }}>{p.description}</p>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '20px', fontWeight: 'bold', color: 'white' }}>R$ {p.price}</span>
-                    <button onClick={() => addToCart(p)} style={{ padding: '6px 16px', background: '#ff4444', border: 'none', borderRadius: '20px', color: 'white', cursor: 'pointer' }}>COMPRAR</button>
-                  </div>
+          {/* Edições Anteriores */}
+          <div style={{ padding: '40px 24px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
+              <h3 style={{ fontSize: '18px', fontWeight: 'bold', margin: 0, background: 'linear-gradient(135deg, #00d4ff, #0088ff, #00d4ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', letterSpacing: '1px' }}>✦ EDIÇÕES ANTERIORES ✦</h3>
+              <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.05)', padding: '4px 12px', borderRadius: '20px' }}>Mostrando 2 de 5 edições</span>
+            </div>
+            <div style={{ display: 'flex', overflowX: 'auto', gap: '24px', scrollBehavior: 'smooth', paddingBottom: '16px', cursor: 'grab' }}>
+              <div style={{ flex: '0 0 280px', background: 'rgba(10, 20, 35, 0.5)', backdropFilter: 'blur(8px)', borderRadius: '16px', padding: '20px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                <img src="/images/edicao49.jpg" alt="Edição 49" style={{ width: '100%', height: '200px', objectFit: 'cover', borderRadius: '12px', marginBottom: '16px' }} />
+                <h4 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '4px', color: 'white' }}>Edição 49 - 1988</h4>
+                <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px', marginBottom: '16px' }}>Edição histórica com poster exclusivo</p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '20px', fontWeight: 'bold', color: 'white' }}>R$ 39,90</span>
+                  <button onClick={() => setStep('formato')} style={{ padding: '8px 20px', background: 'rgba(255,68,68,0.9)', color: 'white', border: 'none', borderRadius: '30px', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer' }}>COMPRAR</button>
                 </div>
-              ))}
-              <div style={{ flex: '0 0 280px', background: 'rgba(10, 20, 35, 0.5)', borderRadius: '16px', padding: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', minHeight: '320px' }}>
+              </div>
+              <div style={{ flex: '0 0 280px', background: 'rgba(10, 20, 35, 0.5)', backdropFilter: 'blur(8px)', borderRadius: '16px', padding: '20px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                <img src="/images/edicao27.jpg" alt="Edição 27" style={{ width: '100%', height: '200px', objectFit: 'cover', borderRadius: '12px', marginBottom: '16px' }} />
+                <h4 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '4px', color: 'white' }}>Edição 27</h4>
+                <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px', marginBottom: '16px' }}>Os segredos ufológicos do Pentágono</p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '20px', fontWeight: 'bold', color: 'white' }}>R$ 39,90</span>
+                  <button onClick={() => setStep('formato')} style={{ padding: '8px 20px', background: 'rgba(255,68,68,0.9)', color: 'white', border: 'none', borderRadius: '30px', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer' }}>COMPRAR</button>
+                </div>
+              </div>
+              <div style={{ flex: '0 0 280px', background: 'rgba(10, 20, 35, 0.5)', backdropFilter: 'blur(8px)', borderRadius: '16px', padding: '20px', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', minHeight: '320px' }}>
                 <span style={{ fontSize: '48px', opacity: 0.5 }}>🛸</span>
-                <p style={{ color: 'rgba(255,255,255,0.4)' }}>Em breve</p>
+                <p style={{ color: 'rgba(255,255,255,0.4)', marginTop: '16px' }}>Em breve</p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Carrinho Modal */}
-        {isCartOpen && (
-          <div style={{ position: 'fixed', top: 0, right: 0, bottom: 0, width: '400px', background: '#1a1a2a', zIndex: 1000, padding: '20px', overflowY: 'auto' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
-              <h2 style={{ color: 'white' }}>🛒 Carrinho</h2>
-              <button onClick={() => setIsCartOpen(false)} style={{ background: 'none', border: 'none', color: 'white', fontSize: '24px', cursor: 'pointer' }}>✕</button>
-            </div>
-            {cart.length === 0 ? <p style={{ color: 'white' }}>Carrinho vazio</p> : (
-              <>
-                {cart.map(item => (
-                  <div key={item.id} style={{ display: 'flex', gap: '12px', marginBottom: '16px', padding: '12px', background: 'rgba(255,255,255,0.05)', borderRadius: '12px' }}>
-                    <img src={item.image} alt={item.title} style={{ width: '60px', height: '80px', objectFit: 'cover', borderRadius: '8px' }} />
-                    <div style={{ flex: 1 }}>
-                      <h4 style={{ color: 'white' }}>{item.title}</h4>
-                      <p style={{ color: '#ff4444' }}>R$ {item.price}</p>
-                      <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
-                        <button onClick={() => updateQuantity(item.id, item.quantity - 1)} style={{ padding: '4px 8px', background: '#333', borderRadius: '4px', color: 'white', cursor: 'pointer' }}>-</button>
-                        <span style={{ color: 'white' }}>{item.quantity}</span>
-                        <button onClick={() => updateQuantity(item.id, item.quantity + 1)} style={{ padding: '4px 8px', background: '#333', borderRadius: '4px', color: 'white', cursor: 'pointer' }}>+</button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '16px', marginTop: '16px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
-                    <span style={{ color: 'white' }}>Total:</span>
-                    <span style={{ color: '#00ff88', fontSize: '24px', fontWeight: 'bold' }}>R$ {getTotal().toFixed(2)}</span>
-                  </div>
-                  <button onClick={() => { setStep('formato'); setIsCartOpen(false); }} style={{ width: '100%', padding: '12px', background: '#ff4444', border: 'none', borderRadius: '30px', color: 'white', cursor: 'pointer' }}>FINALIZAR COMPRA</button>
-                </div>
-              </>
-            )}
-          </div>
-        )}
-
         {/* Footer */}
-        <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '20px', textAlign: 'center', background: 'rgba(3, 12, 26, 0.95)' }}>
+        <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '20px', textAlign: 'center', background: 'rgba(3, 12, 26, 0.95)', backdropFilter: 'blur(10px)', position: 'sticky', bottom: 0, width: '100%', zIndex: 50 }}>
           <div style={{ display: 'flex', justifyContent: 'center', gap: '48px', marginBottom: '8px' }}>
-            <span onClick={() => { setActiveTab('loja'); setStep('loja'); }} style={{ fontWeight: 'bold', color: '#ff4444', cursor: 'pointer' }}>🛸 LOJA</span>
+            <span onClick={() => { setActiveTab('loja'); setStep('loja'); }} style={{ fontWeight: 'bold', color: '#ff4444', textShadow: '0 0 8px #ff4444', cursor: 'pointer' }}>🛸 LOJA</span>
             <span onClick={() => setActiveTab('anunciante')} style={{ color: 'rgba(255,255,255,0.5)', cursor: 'pointer' }}>📢 ANUNCIANTE</span>
             <span onClick={() => setActiveTab('jornaleiro')} style={{ color: 'rgba(255,255,255,0.5)', cursor: 'pointer' }}>📰 JORNALEIRO</span>
           </div>
-          <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.2)' }}>Banca UFO</p>
+          <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.2)' }}>Banca UFO - Revista Brasileira de Ufologia</p>
         </div>
 
-        <style>{`@keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }`}</style>
+        <style>{`
+          @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }
+          div::-webkit-scrollbar { height: 6px; }
+          div::-webkit-scrollbar-track { background: rgba(255,255,255,0.1); border-radius: 10px; }
+          div::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 10px; }
+        `}</style>
 
         {/* Modal de Login */}
         {showLoginModal && (
-          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }} onClick={() => setShowLoginModal(false)}>
+          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={() => setShowLoginModal(false)}>
             <div style={{ background: '#1a1a2a', borderRadius: '20px', padding: '32px', maxWidth: '400px', width: '90%', border: '1px solid rgba(255,255,255,0.1)' }} onClick={(e) => e.stopPropagation()}>
               <h2 style={{ fontSize: '24px', marginBottom: '24px', color: 'white', textAlign: 'center' }}>{isLogin ? 'ENTRAR' : 'CADASTRAR'}</h2>
               <form onSubmit={handleLogin}>
-                <input type="email" placeholder="E-mail" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} style={inputStyle} required />
-                <input type="password" placeholder="Senha" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} style={inputStyle} required />
+                <input type="email" placeholder="E-mail" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} style={{ width: '100%', padding: '12px', marginBottom: '16px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '8px', color: 'white' }} required />
+                <input type="password" placeholder="Senha" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} style={{ width: '100%', padding: '12px', marginBottom: '24px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '8px', color: 'white' }} required />
                 <button type="submit" style={{ width: '100%', padding: '12px', background: '#e60000', border: 'none', borderRadius: '30px', color: 'white', fontWeight: 'bold', cursor: 'pointer', marginBottom: '12px', boxShadow: '0 0 10px #ff0000' }}>{isLogin ? 'ENTRAR' : 'CADASTRAR'}</button>
               </form>
               <button onClick={() => setIsLogin(!isLogin)} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.6)', cursor: 'pointer', width: '100%', textAlign: 'center' }}>{isLogin ? 'Criar conta' : 'Já tenho conta'}</button>
@@ -258,8 +286,9 @@ function App() {
     );
   }
 
-      // Tela ANUNCIANTE
+     // Tela ANUNCIANTE
   if (activeTab === 'anunciante') {
+    {console.log('🎯 Renderizando header - user:', user, 'role:', user && (user as any).role)}
     return (
       <div style={{ background: 'radial-gradient(ellipse at bottom, #030c1a 0%, #010308 100%)', minHeight: '100vh' }}>
         {/* Header */}
@@ -273,12 +302,17 @@ function App() {
             
             {/* Botão ADMIN */}
             {user && (user as any).role === 'admin' && (
-              <button onClick={() => setShowAdmin(true)} style={{ padding: '8px 20px', background: '#00d4ff', border: 'none', borderRadius: '30px', color: '#0a0a1a', cursor: 'pointer', fontWeight: 'bold' }}>👑 ADMIN</button>
+              <button 
+                onClick={() => setShowAdmin(true)} 
+                style={{ padding: '8px 20px', background: '#00d4ff', border: 'none', borderRadius: '30px', color: '#0a0a1a', cursor: 'pointer', fontWeight: 'bold' }}
+              >
+                👑 ADMIN
+              </button>
             )}
             
             {user ? (
               <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                <span style={{ color: 'white', fontSize: '14px' }}>👋 {user.email?.split('@')[0]}</span>
+                <span style={{ color: 'white', fontSize: '14px' }}>Olá, {user.email?.split('@')[0]}</span>
                 <button onClick={handleLogout} style={{ padding: '8px 20px', background: '#333', border: 'none', borderRadius: '30px', color: 'white', cursor: 'pointer' }}>SAIR</button>
               </div>
             ) : (
@@ -301,7 +335,8 @@ function App() {
 
         {/* Conteúdo */}
         <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px 24px' }}>
-          {showPanel === 'mediakit' && (
+
+                    {showPanel === 'mediakit' && (
             <div style={{ background: 'rgba(10, 20, 35, 0.6)', backdropFilter: 'blur(12px)', borderRadius: '20px', padding: '32px', border: '1px solid rgba(255,255,255,0.08)' }}>
               <h3 style={{ fontSize: '22px', fontWeight: 'bold', marginBottom: '16px', color: 'white' }}>Media Kit</h3>
               <p style={{ color: 'rgba(255,255,255,0.7)', marginBottom: '32px', lineHeight: '1.5' }}>Alcance leitores apaixonados por tecnologia, ciência e fenômenos inexplicados. A Banca UFO é a revista de maior credibilidade no segmento.</p>
@@ -411,11 +446,11 @@ function App() {
           )}
         </div>
 
-                {/* Footer */}
-        <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '20px', textAlign: 'center', background: 'rgba(3, 12, 26, 0.95)', backdropFilter: 'blur(10px)', position: 'sticky', bottom: 0, width: '100%', zIndex: 50 }}>
+        {/* Footer */}
+        <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '20px', textAlign: 'center', background: 'rgba(3, 12, 26, 0.95)', marginTop: '40px' }}>
           <div style={{ display: 'flex', justifyContent: 'center', gap: '48px', marginBottom: '8px' }}>
             <span onClick={() => { setActiveTab('loja'); setStep('loja'); }} style={{ color: 'rgba(255,255,255,0.5)', cursor: 'pointer' }}>🛸 LOJA</span>
-            <span onClick={() => setActiveTab('anunciante')} style={{ fontWeight: 'bold', color: '#00d4ff', textShadow: '0 0 8px #00d4ff', cursor: 'pointer' }}>📢 ANUNCIANTE</span>
+            <span onClick={() => setActiveTab('anunciante')} style={{ fontWeight: 'bold', color: '#00d4ff', cursor: 'pointer' }}>📢 ANUNCIANTE</span>
             <span onClick={() => setActiveTab('jornaleiro')} style={{ color: 'rgba(255,255,255,0.5)', cursor: 'pointer' }}>📰 JORNALEIRO</span>
           </div>
           <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.2)' }}>Banca UFO - Revista Brasileira de Ufologia</p>
@@ -423,12 +458,12 @@ function App() {
 
         {/* Modal de Login */}
         {showLoginModal && (
-          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }} onClick={() => setShowLoginModal(false)}>
+          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={() => setShowLoginModal(false)}>
             <div style={{ background: '#1a1a2a', borderRadius: '20px', padding: '32px', maxWidth: '400px', width: '90%', border: '1px solid rgba(255,255,255,0.1)' }} onClick={(e) => e.stopPropagation()}>
               <h2 style={{ fontSize: '24px', marginBottom: '24px', color: 'white', textAlign: 'center' }}>{isLogin ? 'ENTRAR' : 'CADASTRAR'}</h2>
               <form onSubmit={handleLogin}>
-                <input type="email" placeholder="E-mail" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} style={inputStyle} required />
-                <input type="password" placeholder="Senha" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} style={inputStyle} required />
+                <input type="email" placeholder="E-mail" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} style={{ width: '100%', padding: '12px', marginBottom: '16px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '8px', color: 'white' }} required />
+                <input type="password" placeholder="Senha" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} style={{ width: '100%', padding: '12px', marginBottom: '24px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '8px', color: 'white' }} required />
                 <button type="submit" style={{ width: '100%', padding: '12px', background: '#e60000', border: 'none', borderRadius: '30px', color: 'white', fontWeight: 'bold', cursor: 'pointer', marginBottom: '12px', boxShadow: '0 0 10px #ff0000' }}>{isLogin ? 'ENTRAR' : 'CADASTRAR'}</button>
               </form>
               <button onClick={() => setIsLogin(!isLogin)} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.6)', cursor: 'pointer', width: '100%', textAlign: 'center' }}>{isLogin ? 'Criar conta' : 'Já tenho conta'}</button>
@@ -439,9 +474,10 @@ function App() {
       </div>
     );
   }
-
-    // Tela JORNALEIRO
+  
+        // Tela JORNALEIRO
   if (activeTab === 'jornaleiro') {
+    {console.log('🎯 Renderizando header - user:', user, 'role:', user && (user as any).role)}
     return (
       <div style={{ background: 'radial-gradient(ellipse at bottom, #030c1a 0%, #010308 100%)', minHeight: '100vh' }}>
         {/* Header */}
@@ -455,12 +491,17 @@ function App() {
             
             {/* Botão ADMIN */}
             {user && (user as any).role === 'admin' && (
-              <button onClick={() => setShowAdmin(true)} style={{ padding: '8px 20px', background: '#00d4ff', border: 'none', borderRadius: '30px', color: '#0a0a1a', cursor: 'pointer', fontWeight: 'bold' }}>👑 ADMIN</button>
+              <button 
+                onClick={() => setShowAdmin(true)} 
+                style={{ padding: '8px 20px', background: '#00d4ff', border: 'none', borderRadius: '30px', color: '#0a0a1a', cursor: 'pointer', fontWeight: 'bold' }}
+              >
+                👑 ADMIN
+              </button>
             )}
             
             {user ? (
               <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                <span style={{ color: 'white', fontSize: '14px' }}>👋 {user.email?.split('@')[0]}</span>
+                <span style={{ color: 'white', fontSize: '14px' }}>Olá, {user.email?.split('@')[0]}</span>
                 <button onClick={handleLogout} style={{ padding: '8px 20px', background: '#333', border: 'none', borderRadius: '30px', color: 'white', cursor: 'pointer' }}>SAIR</button>
               </div>
             ) : (
@@ -475,7 +516,7 @@ function App() {
           <p style={{ color: 'rgba(255,255,255,0.5)' }}>Rede de Distribuição UFO</p>
         </div>
 
-        {/* Botões Sobre / Meu Painel */}
+                {/* Botões Sobre / Meu Painel */}
         <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', padding: '0 24px 24px' }}>
           <button onClick={() => setShowJornPanel('sobre')} style={{ background: showJornPanel === 'sobre' ? '#00ff88' : 'transparent', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '30px', padding: '8px 32px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer', color: showJornPanel === 'sobre' ? '#0a0a1a' : '#fff' }}>Sobre</button>
           <button onClick={() => setShowJornPanel('mypanel')} style={{ background: showJornPanel === 'mypanel' ? '#00ff88' : 'transparent', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '30px', padding: '8px 32px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer', color: showJornPanel === 'mypanel' ? '#0a0a1a' : '#fff' }}>Meu Painel</button>
@@ -490,7 +531,8 @@ function App() {
                 <p style={{ color: 'rgba(255,255,255,0.6)', maxWidth: '500px', margin: '0 auto' }}>Faça parte da maior rede de distribuição de revistas de ficção científica e fenômenos do Brasil.</p>
               </div>
 
-              {/* Cards de Benefícios */}
+                                          {/* Cards de Benefícios - Responsivo (2 colunas no mobile) */}
+                           {/* Cards de Benefícios */}
               <div className="cards-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '24px', marginBottom: '48px' }}>
                 <div className="card-item" style={{ background: 'rgba(0, 255, 136, 0.1)', borderRadius: '16px', padding: '24px', border: '1px solid rgba(0, 255, 136, 0.3)', textAlign: 'center' }}>
                   <div style={{ marginBottom: '12px' }}><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#00ff88" strokeWidth="1.2"><circle cx="12" cy="12" r="10"/><text x="12" y="17" textAnchor="middle" fill="#00ff88" fontSize="14" fontWeight="bold">$</text></svg></div>
@@ -541,10 +583,15 @@ function App() {
                 </div>
               </div>
 
-              {/* Botão / Formulário Quero ser Jornaleiro */}
+                            {/* Botão / Formulário Quero ser Jornaleiro */}
               <div style={{ marginTop: '32px' }}>
                 {!showJornForm ? (
-                  <button onClick={() => setShowJornForm(true)} style={{ width: '100%', padding: '14px', background: '#00ff88', color: '#0a0a1a', border: 'none', borderRadius: '40px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', boxShadow: '0 0 10px #00ff88' }}>QUERO SER JORNALEIRO UFO</button>
+                  <button 
+                    onClick={() => setShowJornForm(true)} 
+                    style={{ width: '100%', padding: '14px', background: '#00ff88', color: '#0a0a1a', border: 'none', borderRadius: '40px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', boxShadow: '0 0 10px #00ff88' }}
+                  >
+                    QUERO SER JORNALEIRO UFO
+                  </button>
                 ) : (
                   <div style={{ background: 'rgba(0, 255, 136, 0.1)', borderRadius: '16px', padding: '24px', border: '1px solid rgba(0, 255, 136, 0.3)' }}>
                     <h4 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '16px', color: 'white', textAlign: 'center' }}>Pré-cadastro</h4>
@@ -575,6 +622,7 @@ function App() {
                 </div>
               ) : (
                 <div style={{ textAlign: 'center', padding: '40px', border: '1px dashed rgba(255,255,255,0.2)', borderRadius: '16px' }}>
+                  {/* Ícone de caixa com traços finos */}
                   <div style={{ marginBottom: '16px' }}>
                     <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#00ff88" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M20 7h-4.18A3 3 0 0 0 16 5.18V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v1.18A3 3 0 0 0 8.18 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Z"/>
@@ -592,39 +640,23 @@ function App() {
           )}
         </div>
 
-                {/* Footer */}
-        <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '20px', textAlign: 'center', background: 'rgba(3, 12, 26, 0.95)', backdropFilter: 'blur(10px)', position: 'sticky', bottom: 0, width: '100%', zIndex: 50 }}>
+        {/* Footer */}
+        <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '20px', textAlign: 'center', background: 'rgba(3, 12, 26, 0.95)', marginTop: '40px' }}>
           <div style={{ display: 'flex', justifyContent: 'center', gap: '48px', marginBottom: '8px' }}>
             <span onClick={() => { setActiveTab('loja'); setStep('loja'); }} style={{ color: 'rgba(255,255,255,0.5)', cursor: 'pointer' }}>🛸 LOJA</span>
             <span onClick={() => setActiveTab('anunciante')} style={{ color: 'rgba(255,255,255,0.5)', cursor: 'pointer' }}>📢 ANUNCIANTE</span>
-            <span onClick={() => setActiveTab('jornaleiro')} style={{ fontWeight: 'bold', color: '#00ff88', textShadow: '0 0 8px #00ff88', cursor: 'pointer' }}>📰 JORNALEIRO</span>
+            <span onClick={() => setActiveTab('jornaleiro')} style={{ fontWeight: 'bold', color: '#00ff88', cursor: 'pointer' }}>📰 JORNALEIRO</span>
           </div>
           <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.2)' }}>Banca UFO - Revista Brasileira de Ufologia</p>
         </div>
-
-        <style>{`
-          @media (max-width: 768px) {
-            .cards-grid { display: grid !important; grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; }
-            .card-item { padding: 12px !important; text-align: center !important; }
-            .card-item svg { width: 36px !important; height: 36px !important; }
-            .card-title { font-size: 14px !important; }
-            .card-desc { font-size: 11px !important; }
-            .como-funciona-grid { display: grid !important; grid-template-columns: repeat(2, 1fr) !important; gap: 16px !important; }
-            .funciona-item { text-align: center !important; }
-            .circle-number { width: 44px !important; height: 44px !important; font-size: 16px !important; margin: 0 auto 8px !important; }
-            .funciona-title { font-size: 13px !important; }
-            .funciona-desc { font-size: 11px !important; }
-          }
-        `}</style>
-
-        {/* Modal de Login */}
+                {/* Modal de Login */}
         {showLoginModal && (
-          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }} onClick={() => setShowLoginModal(false)}>
+          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={() => setShowLoginModal(false)}>
             <div style={{ background: '#1a1a2a', borderRadius: '20px', padding: '32px', maxWidth: '400px', width: '90%', border: '1px solid rgba(255,255,255,0.1)' }} onClick={(e) => e.stopPropagation()}>
               <h2 style={{ fontSize: '24px', marginBottom: '24px', color: 'white', textAlign: 'center' }}>{isLogin ? 'ENTRAR' : 'CADASTRAR'}</h2>
               <form onSubmit={handleLogin}>
-                <input type="email" placeholder="E-mail" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} style={inputStyle} required />
-                <input type="password" placeholder="Senha" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} style={inputStyle} required />
+                <input type="email" placeholder="E-mail" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} style={{ width: '100%', padding: '12px', marginBottom: '16px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '8px', color: 'white' }} required />
+                <input type="password" placeholder="Senha" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} style={{ width: '100%', padding: '12px', marginBottom: '24px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '8px', color: 'white' }} required />
                 <button type="submit" style={{ width: '100%', padding: '12px', background: '#e60000', border: 'none', borderRadius: '30px', color: 'white', fontWeight: 'bold', cursor: 'pointer', marginBottom: '12px', boxShadow: '0 0 10px #ff0000' }}>{isLogin ? 'ENTRAR' : 'CADASTRAR'}</button>
               </form>
               <button onClick={() => setIsLogin(!isLogin)} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.6)', cursor: 'pointer', width: '100%', textAlign: 'center' }}>{isLogin ? 'Criar conta' : 'Já tenho conta'}</button>
@@ -632,9 +664,249 @@ function App() {
             </div>
           </div>
         )}
+                <style>{`
+          @media (max-width: 768px) {
+            .cards-grid {
+              display: grid !important;
+              grid-template-columns: repeat(2, 1fr) !important;
+              gap: 12px !important;
+            }
+            .card-item {
+              padding: 12px !important;
+              text-align: center !important;
+            }
+            .card-item svg {
+              width: 36px !important;
+              height: 36px !important;
+            }
+            .card-title {
+              font-size: 14px !important;
+            }
+            .card-desc {
+              font-size: 11px !important;
+            }
+            .como-funciona-grid {
+              display: grid !important;
+              grid-template-columns: repeat(2, 1fr) !important;
+              gap: 16px !important;
+            }
+            .funciona-item {
+              text-align: center !important;
+            }
+            .circle-number {
+              width: 44px !important;
+              height: 44px !important;
+              font-size: 16px !important;
+              margin: 0 auto 8px !important;
+            }
+            .funciona-title {
+              font-size: 13px !important;
+            }
+            .funciona-desc {
+              font-size: 11px !important;
+            }
+          }
+        `}</style>
       </div>
     );
   }
+  // Tela de Formato
+  if (step === 'formato') {
+    return (
+      <div style={{ background: 'radial-gradient(ellipse at bottom, #030c1a 0%, #010308 100%)', minHeight: '100vh' }}>
+        <div style={containerStyle}>
+          <div style={cardStyle}>
+            <div style={{ display: 'flex', gap: '24px', alignItems: 'center', marginBottom: '24px' }}>
+              <img src="/images/edicaoatual.jpg" alt="Capa" style={{ width: '80px', height: '100px', objectFit: 'cover', borderRadius: '8px' }} />
+              <div><h2 style={{ fontSize: '22px', fontWeight: 'bold', margin: 0, background: 'linear-gradient(135deg, #00d4ff, #0088ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>UFO Magazine</h2><p style={{ color: 'rgba(255,255,255,0.5)', margin: 0 }}>Edição #42 · Junho 2026</p></div>
+            </div>
+            <p style={{ fontWeight: 'bold', marginBottom: '16px', color: 'white' }}>FORMATO</p>
+            <div style={{ display: 'flex', gap: '16px', marginBottom: '32px' }}>
+              <button onClick={() => setFormato('fisico')} style={{ flex: 1, padding: '20px', border: formato === 'fisico' ? '2px solid #ff4444' : '1px solid rgba(255,255,255,0.15)', background: formato === 'fisico' ? 'rgba(255,68,68,0.1)' : 'rgba(255,255,255,0.03)', borderRadius: '16px', cursor: 'pointer' }}>
+                <div style={{ fontSize: '32px' }}>📖</div><div style={{ fontWeight: 'bold', color: formato === 'fisico' ? '#ff4444' : 'white' }}>Físico</div><div style={{ fontSize: '20px', fontWeight: 'bold', color: 'white' }}>R$ 39,90</div>
+              </button>
+              <button onClick={() => setFormato('digital')} style={{ flex: 1, padding: '20px', border: formato === 'digital' ? '2px solid #ff4444' : '1px solid rgba(255,255,255,0.15)', background: formato === 'digital' ? 'rgba(255,68,68,0.1)' : 'rgba(255,255,255,0.03)', borderRadius: '16px', cursor: 'pointer' }}>
+                <div style={{ fontSize: '32px' }}>💻</div><div style={{ fontWeight: 'bold', color: formato === 'digital' ? '#ff4444' : 'white' }}>Digital</div><div style={{ fontSize: '20px', fontWeight: 'bold', color: 'white' }}>R$ 19,90</div>
+              </button>
+            </div>
+            <p style={{ fontWeight: 'bold', marginBottom: '12px', color: 'white' }}>DESTAQUES</p>
+            <ul style={{ color: 'rgba(255,255,255,0.6)', paddingLeft: '20px', lineHeight: '1.6', marginBottom: '32px' }}>
+              <li>Entrevista exclusiva com ex-piloto da NASA</li><li>Os 10 avistamentos mais intrigantes de 2025</li><li>Tecnologia alienígena: fato ou ficção?</li><li>A nova corrida espacial privada</li><li>Missão Artemis: bastidores revelados</li>
+            </ul>
+            <button onClick={() => setStep('endereco')} style={buttonStyle}>COMPRAR POR R$ {preco.toFixed(2)}</button>
+            <button onClick={() => { setStep('loja'); setActiveTab('loja'); }} style={buttonOutlineStyle}>← Voltar</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Tela de Endereço
+  if (step === 'endereco') {
+    return (
+      <div style={{ background: 'radial-gradient(ellipse at bottom, #030c1a 0%, #010308 100%)', minHeight: '100vh' }}>
+        <div style={containerStyle}>
+          <div style={cardStyle}>
+            <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '24px', background: 'linear-gradient(135deg, #00d4ff, #0088ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>Endereço de Entrega</h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <input type="text" placeholder="CEP" value={endereco.cep} onChange={(e) => handleEnderecoChange('cep', e.target.value)} style={inputStyle} />
+              <input type="text" placeholder="Rua / Avenida" value={endereco.rua} onChange={(e) => handleEnderecoChange('rua', e.target.value)} style={inputStyle} />
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <input type="text" placeholder="Número" value={endereco.numero} onChange={(e) => handleEnderecoChange('numero', e.target.value)} style={inputStyle} />
+                <input type="text" placeholder="Complemento" value={endereco.complemento} onChange={(e) => handleEnderecoChange('complemento', e.target.value)} style={inputStyle} />
+              </div>
+              <input type="text" placeholder="Bairro" value={endereco.bairro} onChange={(e) => handleEnderecoChange('bairro', e.target.value)} style={inputStyle} />
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <input type="text" placeholder="Cidade" value={endereco.cidade} onChange={(e) => handleEnderecoChange('cidade', e.target.value)} style={inputStyle} />
+                <input type="text" placeholder="UF" value={endereco.uf} onChange={(e) => handleEnderecoChange('uf', e.target.value)} style={inputStyle} />
+              </div>
+            </div>
+            <button onClick={() => setStep('pagamento')} style={{ ...buttonStyle, marginTop: '32px' }}>CONTINUAR</button>
+            <button onClick={() => setStep('formato')} style={buttonOutlineStyle}>← Voltar</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Tela de Pagamento
+  if (step === 'pagamento') {
+    return (
+      <div style={{ background: 'radial-gradient(ellipse at bottom, #030c1a 0%, #010308 100%)', minHeight: '100vh' }}>
+        <div style={containerStyle}>
+          <div style={cardStyle}>
+            <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '8px', background: 'linear-gradient(135deg, #00d4ff, #0088ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>Pagamento</h2>
+            <p style={{ color: 'rgba(255,255,255,0.5)', marginBottom: '24px' }}>UFO Magazine - {formato === 'fisico' ? 'Físico' : 'Digital'}</p>
+            <div style={{ border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '20px', marginBottom: '24px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}><span style={{ fontSize: '24px' }}>💳</span><div><div style={{ fontWeight: 'bold', color: 'white' }}>Pix</div><div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)' }}>QR Code + Cópia e Cola</div></div></div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderTop: '1px solid rgba(255,255,255,0.1)' }}><span>Subtotal</span><span>R$ {preco.toFixed(2)}</span></div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0' }}><span>Frete (PAC)</span><span>R$ 0,00</span></div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '16px 0', borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: '8px' }}><span style={{ fontWeight: 'bold' }}>Total</span><span style={{ fontWeight: 'bold' }}>R$ {preco.toFixed(2)}</span></div>
+            </div>
+            <button onClick={handleFinalizarPedido} style={buttonStyle}>CONFIRMAR PEDIDO · R$ {preco.toFixed(2)}</button>
+            <button onClick={() => setStep('endereco')} style={buttonOutlineStyle}>← Voltar</button>
+          </div>
+        </div>
+        {pixModal && (
+          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={() => setPixModal(false)}>
+            <div style={{ background: '#0a0f1a', borderRadius: '20px', padding: '32px', maxWidth: '400px', width: '90%', textAlign: 'center', border: '1px solid rgba(255,255,255,0.1)' }} onClick={(e) => e.stopPropagation()}>
+              <h2 style={{ fontSize: '22px', marginBottom: '16px', background: 'linear-gradient(135deg, #00d4ff, #0088ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>💚 PAGAR COM PIX</h2>
+              <div style={{ background: 'white', padding: '20px', borderRadius: '12px', marginBottom: '16px' }}><img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=teste" alt="QR Code" style={{ width: '160px' }} /></div>
+              <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)', marginBottom: '16px' }}>Escaneie o QR Code com seu banco</p>
+              <button style={{ width: '100%', padding: '12px', background: '#ff4444', color: 'white', border: 'none', borderRadius: '30px', cursor: 'pointer', fontWeight: 'bold' }}>📋 COPIAR CÓDIGO</button>
+              <button onClick={() => setPixModal(false)} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)', marginTop: '16px', cursor: 'pointer' }}>Fechar</button>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+    // Tela ADMIN
+  if (showAdmin) {
+    const [jornaleiros, setJornaleiros] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+      carregarJornaleiros();
+    }, []);
+
+    const carregarJornaleiros = async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('jornaleiros')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (!error && data) setJornaleiros(data);
+      setLoading(false);
+    };
+
+    const atualizarStatus = async (id: number, novoStatus: string) => {
+      const { error } = await supabase
+        .from('jornaleiros')
+        .update({ status: novoStatus })
+        .eq('id', id);
+      
+      if (!error) {
+        alert(`Status atualizado para ${novoStatus}`);
+        carregarJornaleiros();
+      } else {
+        alert('Erro ao atualizar status');
+      }
+    };
+
+    return (
+      <div style={{ background: 'radial-gradient(ellipse at bottom, #030c1a 0%, #010308 100%)', minHeight: '100vh' }}>
+        <div style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <img src="/images/logo.png" alt="Logo" style={{ width: '40px', height: '40px', objectFit: 'contain' }} />
+            <div><h1 style={{ fontSize: '20px', fontWeight: 'bold', color: 'white' }}>BANCA UFO - ADMIN</h1></div>
+          </div>
+          <button onClick={() => setShowAdmin(false)} style={{ padding: '8px 20px', background: '#e60000', border: 'none', borderRadius: '30px', color: 'white', cursor: 'pointer' }}>VOLTAR</button>
+        </div>
+
+        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '32px 24px' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '24px', color: 'white' }}>📋 Jornaleiros Cadastrados</h2>
+          
+          {loading ? (
+            <p style={{ color: 'white' }}>Carregando...</p>
+          ) : jornaleiros.length === 0 ? (
+            <p style={{ color: 'rgba(255,255,255,0.6)' }}>Nenhum cadastro ainda.</p>
+          ) : (
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', color: 'white' }}>
+                <thead>
+                  <tr style={{ background: 'rgba(255,255,255,0.1)' }}>
+                    <th style={{ padding: '12px', textAlign: 'left' }}>ID</th>
+                    <th style={{ padding: '12px', textAlign: 'left' }}>Banca</th>
+                    <th style={{ padding: '12px', textAlign: 'left' }}>CNPJ/CPF</th>
+                    <th style={{ padding: '12px', textAlign: 'left' }}>E-mail</th>
+                    <th style={{ padding: '12px', textAlign: 'left' }}>Telefone</th>
+                    <th style={{ padding: '12px', textAlign: 'left' }}>Status</th>
+                    <th style={{ padding: '12px', textAlign: 'left' }}>Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {jornaleiros.map((j) => (
+                    <tr key={j.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                      <td style={{ padding: '12px' }}>{j.id}</td>
+                      <td style={{ padding: '12px' }}>{j.nome_banca}</td>
+                      <td style={{ padding: '12px' }}>{j.cnpj_cpf}</td>
+                      <td style={{ padding: '12px' }}>{j.email}</td>
+                      <td style={{ padding: '12px' }}>{j.telefone}</td>
+                      <td style={{ padding: '12px' }}>
+                        <span style={{ 
+                          padding: '4px 12px', 
+                          borderRadius: '20px', 
+                          fontSize: '12px',
+                          background: j.status === 'aprovado' ? '#00ff88' : j.status === 'reprovado' ? '#ff4444' : '#ffaa00',
+                          color: j.status === 'aprovado' ? '#0a0a1a' : 'white'
+                        }}>
+                          {j.status}
+                        </span>
+                      </td>
+                      <td style={{ padding: '12px' }}>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <button onClick={() => atualizarStatus(j.id, 'aprovado')} style={{ padding: '4px 12px', background: '#00ff88', border: 'none', borderRadius: '20px', color: '#0a0a1a', cursor: 'pointer', fontSize: '12px' }}>Aprovar</button>
+                          <button onClick={() => atualizarStatus(j.id, 'reprovado')} style={{ padding: '4px 12px', background: '#ff4444', border: 'none', borderRadius: '20px', color: 'white', cursor: 'pointer', fontSize: '12px' }}>Reprovar</button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '20px', textAlign: 'center', marginTop: '40px' }}>
+          <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.2)' }}>Banca UFO - Área Administrativa</p>
+        </div>
+      </div>
+    );
+  }
+  
   return null;
 }
 
