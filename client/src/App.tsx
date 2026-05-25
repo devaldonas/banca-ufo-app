@@ -377,8 +377,105 @@ function App() {
           <p style={{ color: 'rgba(255,255,255,0.5)' }}>Rede de Distribuição UFO</p>
         </div>
 
-        {/* Botões Sobre / Meu Painel */}
-                  {showJornPanel === 'mypanel' && (
+                {/* Botões Sobre / Meu Painel */}
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', padding: '0 24px 24px' }}>
+          <button onClick={() => setShowJornPanel('sobre')} style={{ background: showJornPanel === 'sobre' ? '#00ff88' : 'transparent', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '30px', padding: '8px 32px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer', color: showJornPanel === 'sobre' ? '#0a0a1a' : '#fff' }}>Sobre</button>
+          <button onClick={() => setShowJornPanel('mypanel')} style={{ background: showJornPanel === 'mypanel' ? '#00ff88' : 'transparent', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '30px', padding: '8px 32px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer', color: showJornPanel === 'mypanel' ? '#0a0a1a' : '#fff' }}>Meu Painel</button>
+        </div>
+
+        {/* Conteúdo */}
+        <div style={{ maxWidth: '900px', margin: '0 auto', padding: '20px 24px' }}>
+          {showJornPanel === 'sobre' && (
+            <div style={{ background: 'rgba(10, 20, 35, 0.6)', backdropFilter: 'blur(12px)', borderRadius: '20px', padding: '32px', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+                <h3 style={{ fontSize: '22px', fontWeight: 'bold', marginBottom: '8px', color: 'white' }}>Seja um Jornaleiro UFO</h3>
+                <p style={{ color: 'rgba(255,255,255,0.6)', maxWidth: '500px', margin: '0 auto' }}>Faça parte da maior rede de distribuição de revistas de ficção científica e fenômenos do Brasil.</p>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '24px', marginBottom: '48px' }}>
+                {/* Comissão de 50% - Cifrão minimalista */}
+                <div style={{ background: 'rgba(0, 255, 136, 0.1)', borderRadius: '16px', padding: '24px', border: '1px solid rgba(0, 255, 136, 0.3)', textAlign: 'center' }}>
+                  <div style={{ marginBottom: '12px' }}>
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#00ff88" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="10"/>
+                      <text x="12" y="17" textAnchor="middle" fill="#00ff88" stroke="none" fontSize="14" fontWeight="bold">$</text>
+                    </svg>
+                  </div>
+                  <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#00ff88', marginBottom: '8px' }}>Comissão de 50%</div>
+                  <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '14px' }}>Ganhe em cada exemplar vendido</div>
+                </div>
+
+                {/* Lotes Consignados */}
+                <div style={{ background: 'rgba(0, 255, 136, 0.1)', borderRadius: '16px', padding: '24px', border: '1px solid rgba(0, 255, 136, 0.3)', textAlign: 'center' }}>
+                  <div style={{ marginBottom: '12px' }}>
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#00ff88" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M20 7h-4.18A3 3 0 0 0 16 5.18V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v1.18A3 3 0 0 0 8.18 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Z"/>
+                      <path d="M8 7h8"/>
+                      <circle cx="12" cy="13" r="2"/>
+                    </svg>
+                  </div>
+                  <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#00ff88', marginBottom: '8px' }}>Lotes Consignados</div>
+                  <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '14px' }}>Receba sem custo inicial</div>
+                </div>
+
+                {/* Entrega Gratuita */}
+                <div style={{ background: 'rgba(0, 255, 136, 0.1)', borderRadius: '16px', padding: '24px', border: '1px solid rgba(0, 255, 136, 0.3)', textAlign: 'center' }}>
+                  <div style={{ marginBottom: '12px' }}>
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#00ff88" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="1" y="4" width="15" height="13" rx="2"/>
+                      <path d="M16 9h3a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-3"/>
+                      <circle cx="6" cy="17" r="2"/>
+                      <circle cx="16" cy="17" r="2"/>
+                    </svg>
+                  </div>
+                  <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#00ff88', marginBottom: '8px' }}>Entrega Gratuita</div>
+                  <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '14px' }}>Enviamos para sua banca</div>
+                </div>
+
+                {/* Suporte Total */}
+                <div style={{ background: 'rgba(0, 255, 136, 0.1)', borderRadius: '16px', padding: '24px', border: '1px solid rgba(0, 255, 136, 0.3)', textAlign: 'center' }}>
+                  <div style={{ marginBottom: '12px' }}>
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#00ff88" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+                      <circle cx="12" cy="12" r="1.5" fill="#00ff88"/>
+                    </svg>
+                  </div>
+                  <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#00ff88', marginBottom: '8px' }}>Suporte Total</div>
+                  <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '14px' }}>Equipe dedicada para parceiros</div>
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '48px' }}>
+                <h3 style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '24px', color: 'white', textAlign: 'center' }}>COMO FUNCIONA</h3>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px' }}>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ width: '48px', height: '48px', background: '#00ff88', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', color: '#0a0a1a', fontWeight: 'bold', fontSize: '20px' }}>01</div>
+                    <div style={{ fontWeight: 'bold', color: 'white', marginBottom: '4px' }}>Cadastro</div>
+                    <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px' }}>Preencha o formulário de pré-cadastro</div>
+                  </div>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ width: '48px', height: '48px', background: '#00ff88', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', color: '#0a0a1a', fontWeight: 'bold', fontSize: '20px' }}>02</div>
+                    <div style={{ fontWeight: 'bold', color: 'white', marginBottom: '4px' }}>Aprovação</div>
+                    <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px' }}>Nossa equipe analisa em até 48h</div>
+                  </div>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ width: '48px', height: '48px', background: '#00ff88', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', color: '#0a0a1a', fontWeight: 'bold', fontSize: '20px' }}>03</div>
+                    <div style={{ fontWeight: 'bold', color: 'white', marginBottom: '4px' }}>Receba o Lote</div>
+                    <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px' }}>Enviamos as revistas para sua banca</div>
+                  </div>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ width: '48px', height: '48px', background: '#00ff88', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', color: '#0a0a1a', fontWeight: 'bold', fontSize: '20px' }}>04</div>
+                    <div style={{ fontWeight: 'bold', color: 'white', marginBottom: '4px' }}>Venda e Lucro</div>
+                    <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px' }}>Reporte as vendas e receba sua comissão</div>
+                  </div>
+                </div>
+              </div>
+
+              <button style={{ width: '100%', padding: '14px', background: '#00ff88', color: '#0a0a1a', border: 'none', borderRadius: '40px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer' }}>QUERO SER JORNALEIRO UFO</button>
+            </div>
+          )}
+
+          {showJornPanel === 'mypanel' && (
             <div style={{ background: 'rgba(10, 20, 35, 0.6)', backdropFilter: 'blur(12px)', borderRadius: '20px', padding: '32px', border: '1px solid rgba(255,255,255,0.08)' }}>
               <h3 style={{ fontSize: '22px', fontWeight: 'bold', marginBottom: '16px', color: 'white' }}>Meu Painel</h3>
               {!user ? (
@@ -404,6 +501,7 @@ function App() {
               )}
             </div>
           )}
+        </div>
 
         {/* Footer */}
         <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '20px', textAlign: 'center', background: 'rgba(3, 12, 26, 0.95)', marginTop: '40px' }}>
