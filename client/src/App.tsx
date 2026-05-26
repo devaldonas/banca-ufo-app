@@ -226,18 +226,19 @@ function App() {
             )}
           </div>
         )}
+        
 
         {/* Footer */}
-        <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '20px', textAlign: 'center', background: 'rgba(3, 12, 26, 0.95)' }}>
+        <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '20px', textAlign: 'center', background: 'rgba(3, 12, 26, 0.95)', backdropFilter: 'blur(10px)', position: 'sticky', bottom: 0, width: '100%', zIndex: 50 }}>
           <div style={{ display: 'flex', justifyContent: 'center', gap: '48px', marginBottom: '8px' }}>
-            <span onClick={() => { setActiveTab('loja'); setStep('loja'); }} style={{ fontWeight: 'bold', color: '#ff4444', cursor: 'pointer' }}>🛸 LOJA</span>
+            <span onClick={() => { setActiveTab('loja'); setStep('loja'); }} style={{ fontWeight: 'bold', color: '#ff4444', textShadow: '0 0 8px #ff4444', cursor: 'pointer' }}>🛸 LOJA</span>
             <span onClick={() => setActiveTab('anunciante')} style={{ color: 'rgba(255,255,255,0.5)', cursor: 'pointer' }}>📢 ANUNCIANTE</span>
             <span onClick={() => setActiveTab('jornaleiro')} style={{ color: 'rgba(255,255,255,0.5)', cursor: 'pointer' }}>📰 JORNALEIRO</span>
           </div>
-          <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.2)' }}>Banca UFO</p>
+          <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.2)' }}>Banca UFO - Revista Brasileira de Ufologia</p>
         </div>
 
-        <style>{`@keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }`}</style>
+<style>{`@keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }`}</style>
 
         {/* Modal de Login */}
         {showLoginModal && (
@@ -414,9 +415,17 @@ function App() {
                 {/* Footer */}
         <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '20px', textAlign: 'center', background: 'rgba(3, 12, 26, 0.95)', backdropFilter: 'blur(10px)', position: 'sticky', bottom: 0, width: '100%', zIndex: 50 }}>
           <div style={{ display: 'flex', justifyContent: 'center', gap: '48px', marginBottom: '8px' }}>
+
+
             <span onClick={() => { setActiveTab('loja'); setStep('loja'); }} style={{ color: 'rgba(255,255,255,0.5)', cursor: 'pointer' }}>🛸 LOJA</span>
+
+
             <span onClick={() => setActiveTab('anunciante')} style={{ fontWeight: 'bold', color: '#00d4ff', textShadow: '0 0 8px #00d4ff', cursor: 'pointer' }}>📢 ANUNCIANTE</span>
+
+
             <span onClick={() => setActiveTab('jornaleiro')} style={{ color: 'rgba(255,255,255,0.5)', cursor: 'pointer' }}>📰 JORNALEIRO</span>
+
+
           </div>
           <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.2)' }}>Banca UFO - Revista Brasileira de Ufologia</p>
         </div>
@@ -595,9 +604,17 @@ function App() {
                 {/* Footer */}
         <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '20px', textAlign: 'center', background: 'rgba(3, 12, 26, 0.95)', backdropFilter: 'blur(10px)', position: 'sticky', bottom: 0, width: '100%', zIndex: 50 }}>
           <div style={{ display: 'flex', justifyContent: 'center', gap: '48px', marginBottom: '8px' }}>
+
+
             <span onClick={() => { setActiveTab('loja'); setStep('loja'); }} style={{ color: 'rgba(255,255,255,0.5)', cursor: 'pointer' }}>🛸 LOJA</span>
+
+
             <span onClick={() => setActiveTab('anunciante')} style={{ color: 'rgba(255,255,255,0.5)', cursor: 'pointer' }}>📢 ANUNCIANTE</span>
+
+
             <span onClick={() => setActiveTab('jornaleiro')} style={{ fontWeight: 'bold', color: '#00ff88', textShadow: '0 0 8px #00ff88', cursor: 'pointer' }}>📰 JORNALEIRO</span>
+
+            
           </div>
           <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.2)' }}>Banca UFO - Revista Brasileira de Ufologia</p>
         </div>
