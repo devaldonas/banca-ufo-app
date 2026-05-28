@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { supabase } from './lib/supabase';
+import { supabase, isUserAdmin } from './lib/supabase';
+import AdminPanel from './components/AdminPanel'; // Adicione esta linha
 
 function App() {
   const [activeTab, setActiveTab] = useState<'loja' | 'anunciante' | 'jornaleiro'>('loja');
@@ -23,13 +24,14 @@ function App() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [showPanel, setShowPanel] = useState<'mediakit' | 'mypanel'>('mediakit');
   const [showJornPanel, setShowJornPanel] = useState<'sobre' | 'mypanel'>('sobre');
+  const [isAdmin, setIsAdmin] = useState(false); // Adicione esta linha
 
   const preco = formato === 'fisico' ? 39.90 : 19.90;
 
   const products = [
     { id: 1, title: 'Edição 49 - 1988', price: 39.90, image: '/images/edicao49.jpg', description: 'Edição histórica com poster exclusivo' },
     { id: 2, title: 'Edição 27', price: 39.90, image: '/images/edicao27.jpg', description: 'Os segredos ufológicos do Pentágono' },
-    { id: 3, title: 'Edição Atual', price: 39.90, image: '/images/edicaoatual.jpg', description: 'Um novo tempo se inicia!' },
+    { id: 3, title: 'Edição Atual', price: 39.90, image: '/images/edicaoatual.png', description: 'Um novo tempo se inicia!' },
   ];
 
   const addToCart = (product: any) => {
@@ -51,42 +53,77 @@ function App() {
   const getItemCount = () => cart.reduce((sum, item) => sum + item.quantity, 0);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setUser(session?.user || null);
+      if (session?.user) {
+        const admin = await isUserAdmin(session.user.id);
+        setIsAdmin(admin);
+        console.log('🔴 DEBUG - setIsAdmin sendo chamado com valor:', admin);
+      }
     });
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setUser(session?.user || null);
+      if (session?.user) {
+        const admin = await isUserAdmin(session.user.id);
+        setIsAdmin(admin);
+        console.log('🔴 DEBUG - setIsAdmin sendo chamado com valor:', admin);
+      } else {
+        setIsAdmin(false);
+      }
     });
+    
     return () => subscription.unsubscribe();
   }, []);
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (isLogin) {
-      const { error, data } = await supabase.auth.signInWithPassword({ email: loginEmail, password: loginPassword });
-      if (error) {
-        alert(error.message);
-      } else {
-        alert('Login realizado!');
-        setUser(data.user);
-        setShowLoginModal(false);
-        setLoginEmail('');
-        setLoginPassword('');
-      }
+ const handleLogin = async (e: React.FormEvent) => {
+  e.preventDefault();
+  if (isLogin) {
+    const { error, data } = await supabase.auth.signInWithPassword({ email: loginEmail, password: loginPassword });
+    if (error) {
+      alert(error.message);
     } else {
-      const { error } = await supabase.auth.signUp({ email: loginEmail, password: loginPassword });
-      if (error) {
-        alert(error.message);
-      } else {
-        alert('Cadastro realizado! Verifique seu e-mail.');
-        setShowLoginModal(false);
-        setLoginEmail('');
-        setLoginPassword('');
-      }
+      alert('Login realizado!');
+      setUser(data.user);
+      const admin = await isUserAdmin(data.user.id);
+      setIsAdmin(admin);
+      console.log('🔴 DEBUG - setIsAdmin sendo chamado com valor:', admin);
+      setShowLoginModal(false);
+      setLoginEmail('');
+      setLoginPassword('');
     }
-  };
+  } else {
+    const { error } = await supabase.auth.signUp({ email: loginEmail, password: loginPassword });
+    if (error) {
+      alert(error.message);
+    } else {
+      alert('Cadastro realizado! Verifique seu e-mail.');
+      setShowLoginModal(false);
+      setLoginEmail('');
+      setLoginPassword('');
+    }
+  }
+};
 
-  const handleLogout = async () => { await supabase.auth.signOut(); setUser(null); };
+const handleLogout = async () => { 
+  try {
+    await supabase.auth.signOut();
+    // Limpar estados
+    setUser(null);
+    setIsAdmin(false);
+    setShowAdmin(false);
+    setShowLoginModal(false);
+    setCart([]);
+    setIsCartOpen(false);
+    // Pequeno delay para garantir que os estados foram atualizados
+    setTimeout(() => {
+      window.location.reload();
+    }, 100);
+  } catch (error) {
+    console.error('Erro no logout:', error);
+    window.location.reload();
+  }
+};
 
   const handleEnderecoChange = (campo: string, valor: string) => {
     setEndereco({ ...endereco, [campo]: valor });
@@ -113,6 +150,12 @@ function App() {
   const buttonOutlineStyle = { width: '100%', padding: '14px', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '40px', color: 'white', cursor: 'pointer', marginTop: '12px' };
 
   // Tela da Loja
+  // Verificar se deve mostrar AdminPanel
+if (showAdmin && isAdmin) {
+  return <AdminPanel user={user} onClose={() => setShowAdmin(false)} />;
+}
+
+// Tela da Loja
   if (step === 'loja' && activeTab === 'loja') {
     return (
       <div style={{ background: 'radial-gradient(ellipse at bottom, #030c1a 0%, #010308 100%)', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -124,6 +167,10 @@ function App() {
           </div>
           <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
             <button style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: 'rgba(255,255,255,0.6)' }}>🔍</button>
+             {/* Botão ADMIN */}
+            {isAdmin && (
+              <button onClick={() => setShowAdmin(true)} style={{ padding: '8px 20px', background: '#00d4ff', border: 'none', borderRadius: '30px', color: '#0a0a1a', cursor: 'pointer', fontWeight: 'bold' }}>👑 ADMIN</button>
+            )}
             <button onClick={() => setIsCartOpen(true)} style={{ position: 'relative', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: 'white' }}>🛒 {getItemCount() > 0 && <span style={{ position: 'absolute', top: '-8px', right: '-12px', background: '#ff4444', borderRadius: '50%', width: '18px', height: '18px', fontSize: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{getItemCount()}</span>}</button>
             {user ? (
               <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
@@ -141,14 +188,14 @@ function App() {
           {/* Capa */}
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '40px' }}>
             <div style={{ width: '200px', animation: 'float 4s ease-in-out infinite' }}>
-              <img src="/images/edicaoatual.jpg" alt="Capa" style={{ width: '100%', borderRadius: '12px', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }} />
+              <img src="/images/edicaoatual.png" alt="Capa" style={{ width: '100%', borderRadius: '12px', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }} />
             </div>
           </div>
 
           <div style={{ maxWidth: '800px', margin: '0 auto' }}>
             <h2 style={{ fontSize: '28px', fontWeight: 'bold', textAlign: 'center', background: 'linear-gradient(135deg, #00d4ff, #0088ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>UFO Magazine</h2>
-            <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.5)' }}>Edição #42 · Junho 2026</p>
-            <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.7)', margin: '20px 0' }}>A edição mais aguardada do ano traz uma cobertura exclusiva sobre os últimos avanços em tecnologia espacial.</p>
+            <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.5)' }}>Ano XL Edição #001 · Junho 2026</p>
+            <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.7)', margin: '20px 0' }}>A edição mais aguardada do ano traz uma cobertura exclusiva sobre a transição da revista UFO.</p>
             
             <div style={{ marginBottom: '24px' }}>
               <h3 style={{ fontSize: '14px', fontWeight: 'bold', textAlign: 'center', background: 'linear-gradient(135deg, #00d4ff, #0088ff, #00d4ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>✦ EDIÇÃO ATUAL ✦</h3>
@@ -228,12 +275,27 @@ function App() {
         )}
         
 
-        {/* Footer */}
-        <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '20px', textAlign: 'center', background: 'rgba(3, 12, 26, 0.95)', backdropFilter: 'blur(10px)', position: 'sticky', bottom: 0, width: '100%', zIndex: 50 }}>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '48px', marginBottom: '8px' }}>
-            <span onClick={() => { setActiveTab('loja'); setStep('loja'); }} style={{ fontWeight: 'bold', color: '#ff4444', textShadow: '0 0 8px #ff4444', cursor: 'pointer' }}>🛸 LOJA</span>
-            <span onClick={() => setActiveTab('anunciante')} style={{ color: 'rgba(255,255,255,0.5)', cursor: 'pointer' }}>📢 ANUNCIANTE</span>
-            <span onClick={() => setActiveTab('jornaleiro')} style={{ color: 'rgba(255,255,255,0.5)', cursor: 'pointer' }}>📰 JORNALEIRO</span>
+                {/* Footer */}
+        <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '16px 24px', textAlign: 'center', background: 'rgba(3, 12, 26, 0.95)', backdropFilter: 'blur(10px)', position: 'sticky', bottom: 0, width: '100%', zIndex: 50 }}>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '32px', marginBottom: '8px', alignItems: 'center' }}>
+            <img 
+              src="/images/lojavermelha.png" 
+              alt="LOJA" 
+              style={{ height: '32px', width: 'auto', cursor: 'pointer' }}
+              onClick={() => { setActiveTab('loja'); setStep('loja'); }}
+            />
+            <img 
+              src="/images/anunciantecinza.png" 
+              alt="ANUNCIANTE" 
+              style={{ height: '32px', width: 'auto', cursor: 'pointer' }}
+              onClick={() => setActiveTab('anunciante')}
+            />
+            <img 
+              src="/images/jornaleirocinza.png" 
+              alt="JORNALEIRO" 
+              style={{ height: '32px', width: 'auto', cursor: 'pointer' }}
+              onClick={() => setActiveTab('jornaleiro')}
+            />
           </div>
           <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.2)' }}>Banca UFO - Revista Brasileira de Ufologia</p>
         </div>
@@ -260,6 +322,12 @@ function App() {
   }
 
       // Tela ANUNCIANTE
+      // Verificar se deve mostrar AdminPanel
+if (showAdmin && isAdmin) {
+  return <AdminPanel user={user} onClose={() => setShowAdmin(false)} />;
+}
+
+// Tela Anunciante
   if (activeTab === 'anunciante') {
     return (
       <div style={{ background: 'radial-gradient(ellipse at bottom, #030c1a 0%, #010308 100%)', minHeight: '100vh' }}>
@@ -272,8 +340,8 @@ function App() {
           <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
             <button style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: 'rgba(255,255,255,0.6)' }}>🔍</button>
             
-            {/* Botão ADMIN */}
-            {user && (user as any).role === 'admin' && (
+             {/* Botão ADMIN */}
+            {isAdmin && (
               <button onClick={() => setShowAdmin(true)} style={{ padding: '8px 20px', background: '#00d4ff', border: 'none', borderRadius: '30px', color: '#0a0a1a', cursor: 'pointer', fontWeight: 'bold' }}>👑 ADMIN</button>
             )}
             
@@ -412,20 +480,27 @@ function App() {
           )}
         </div>
 
-                {/* Footer */}
-        <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '20px', textAlign: 'center', background: 'rgba(3, 12, 26, 0.95)', backdropFilter: 'blur(10px)', position: 'sticky', bottom: 0, width: '100%', zIndex: 50 }}>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '48px', marginBottom: '8px' }}>
-
-
-            <span onClick={() => { setActiveTab('loja'); setStep('loja'); }} style={{ color: 'rgba(255,255,255,0.5)', cursor: 'pointer' }}>🛸 LOJA</span>
-
-
-            <span onClick={() => setActiveTab('anunciante')} style={{ fontWeight: 'bold', color: '#00d4ff', textShadow: '0 0 8px #00d4ff', cursor: 'pointer' }}>📢 ANUNCIANTE</span>
-
-
-            <span onClick={() => setActiveTab('jornaleiro')} style={{ color: 'rgba(255,255,255,0.5)', cursor: 'pointer' }}>📰 JORNALEIRO</span>
-
-
+                        {/* Footer */}
+        <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '16px 24px', textAlign: 'center', background: 'rgba(3, 12, 26, 0.95)', backdropFilter: 'blur(10px)', position: 'sticky', bottom: 0, width: '100%', zIndex: 50 }}>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '32px', marginBottom: '8px', alignItems: 'center' }}>
+            <img 
+              src="/images/lojacinza.png" 
+              alt="LOJA" 
+              style={{ height: '32px', width: 'auto', cursor: 'pointer' }}
+              onClick={() => { setActiveTab('loja'); setStep('loja'); }}
+            />
+            <img 
+              src="/images/anuncianteazul.png" 
+              alt="ANUNCIANTE" 
+              style={{ height: '32px', width: 'auto', cursor: 'pointer' }}
+              onClick={() => setActiveTab('anunciante')}
+            />
+            <img 
+              src="/images/jornaleirocinza.png" 
+              alt="JORNALEIRO" 
+              style={{ height: '32px', width: 'auto', cursor: 'pointer' }}
+              onClick={() => setActiveTab('jornaleiro')}
+            />
           </div>
           <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.2)' }}>Banca UFO - Revista Brasileira de Ufologia</p>
         </div>
@@ -450,6 +525,12 @@ function App() {
   }
 
     // Tela JORNALEIRO
+    // Verificar se deve mostrar AdminPanel
+if (showAdmin && isAdmin) {
+  return <AdminPanel user={user} onClose={() => setShowAdmin(false)} />;
+}
+
+// Tela Jornaleiro
   if (activeTab === 'jornaleiro') {
     return (
       <div style={{ background: 'radial-gradient(ellipse at bottom, #030c1a 0%, #010308 100%)', minHeight: '100vh' }}>
@@ -463,7 +544,7 @@ function App() {
             <button style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: 'rgba(255,255,255,0.6)' }}>🔍</button>
             
             {/* Botão ADMIN */}
-            {user && (user as any).role === 'admin' && (
+            {isAdmin && (
               <button onClick={() => setShowAdmin(true)} style={{ padding: '8px 20px', background: '#00d4ff', border: 'none', borderRadius: '30px', color: '#0a0a1a', cursor: 'pointer', fontWeight: 'bold' }}>👑 ADMIN</button>
             )}
             
@@ -601,20 +682,27 @@ function App() {
           )}
         </div>
 
-                {/* Footer */}
-        <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '20px', textAlign: 'center', background: 'rgba(3, 12, 26, 0.95)', backdropFilter: 'blur(10px)', position: 'sticky', bottom: 0, width: '100%', zIndex: 50 }}>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '48px', marginBottom: '8px' }}>
-
-
-            <span onClick={() => { setActiveTab('loja'); setStep('loja'); }} style={{ color: 'rgba(255,255,255,0.5)', cursor: 'pointer' }}>🛸 LOJA</span>
-
-
-            <span onClick={() => setActiveTab('anunciante')} style={{ color: 'rgba(255,255,255,0.5)', cursor: 'pointer' }}>📢 ANUNCIANTE</span>
-
-
-            <span onClick={() => setActiveTab('jornaleiro')} style={{ fontWeight: 'bold', color: '#00ff88', textShadow: '0 0 8px #00ff88', cursor: 'pointer' }}>📰 JORNALEIRO</span>
-
-            
+                  {/* Footer */}
+        <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '16px 24px', textAlign: 'center', background: 'rgba(3, 12, 26, 0.95)', backdropFilter: 'blur(10px)', position: 'sticky', bottom: 0, width: '100%', zIndex: 50 }}>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '32px', marginBottom: '8px', alignItems: 'center' }}>
+            <img 
+              src="/images/lojacinza.png" 
+              alt="LOJA" 
+              style={{ height: '32px', width: 'auto', cursor: 'pointer' }}
+              onClick={() => { setActiveTab('loja'); setStep('loja'); }}
+            />
+            <img 
+              src="/images/anunciantecinza.png" 
+              alt="ANUNCIANTE" 
+              style={{ height: '32px', width: 'auto', cursor: 'pointer' }}
+              onClick={() => setActiveTab('anunciante')}
+            />
+            <img 
+              src="/images/jornaleiroverde.png" 
+              alt="JORNALEIRO" 
+              style={{ height: '32px', width: 'auto', cursor: 'pointer' }}
+              onClick={() => setActiveTab('jornaleiro')}
+            />
           </div>
           <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.2)' }}>Banca UFO - Revista Brasileira de Ufologia</p>
         </div>
