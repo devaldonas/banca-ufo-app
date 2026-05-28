@@ -256,15 +256,12 @@ if (showAdmin && isAdmin) {
   <div style={{ display: 'flex', justifyContent: 'center', position: 'relative' }}>
     <div style={{ position: 'relative', display: 'inline-block' }}>
       {/* Texto BANCA acima e à esquerda da logo */}
-      <div style={{ position: 'absolute', top: '-6px', left: '0' }}>
-        <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', letterSpacing: '2px', fontWeight: 'bold' }}>BANCA</span>
-      </div>
-      
+            
       {/* Logo imagem */}
       <img 
-        src="/images/logo3.png" 
+        src="/images/logo4.png" 
         alt="Banca UFO" 
-        style={{ height: '60px', width: 'auto', objectFit: 'contain' }} 
+        style={{ height: '120px', width: 'auto', objectFit: 'contain' }} 
       />
     </div>
   </div>
@@ -446,15 +443,15 @@ if (showAdmin && isAdmin) {
   <div style={{ display: 'flex', justifyContent: 'center', position: 'relative' }}>
     <div style={{ position: 'relative', display: 'inline-block' }}>
       {/* Texto BANCA acima e à esquerda da logo */}
-      <div style={{ position: 'absolute', top: '-16px', left: '0' }}>
+      <div style={{ position: 'absolute', top: '-4px', left: '0' }}>
         <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', letterSpacing: '2px', fontWeight: 'bold' }}>BANCA</span>
       </div>
       
       {/* Logo imagem */}
       <img 
-        src="/images/logo3.png" 
+        src="/images/logo4.png" 
         alt="Banca UFO" 
-        style={{ height: '60px', width: 'auto', objectFit: 'contain' }} 
+        style={{ height: '120px', width: 'auto', objectFit: 'contain' }} 
       />
     </div>
   </div>
@@ -665,15 +662,15 @@ if (showAdmin && isAdmin) {
   <div style={{ display: 'flex', justifyContent: 'center', position: 'relative' }}>
     <div style={{ position: 'relative', display: 'inline-block' }}>
       {/* Texto BANCA acima e à esquerda da logo */}
-      <div style={{ position: 'absolute', top: '-16px', left: '0' }}>
+      <div style={{ position: 'absolute', top: '-4px', left: '0' }}>
         <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', letterSpacing: '2px', fontWeight: 'bold' }}>BANCA</span>
       </div>
       
       {/* Logo imagem */}
       <img 
-        src="/images/logo3.png" 
+        src="/images/logo4.png" 
         alt="Banca UFO" 
-        style={{ height: '60px', width: 'auto', objectFit: 'contain' }} 
+        style={{ height: '120px', width: 'auto', objectFit: 'contain' }} 
       />
     </div>
   </div>
