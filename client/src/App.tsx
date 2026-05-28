@@ -29,24 +29,13 @@ function App() {
 
   const preco = formato === 'fisico' ? 39.90 : 19.90;
 
-  // Forçar recarregamento se o cache estiver velho
-useEffect(() => {
-  const lastVisit = localStorage.getItem('banca_ufo_version');
-  const currentVersion = '2.0.0';
-  
-  if (!lastVisit || lastVisit !== currentVersion) {
-    localStorage.setItem('banca_ufo_version', currentVersion);
-    window.location.reload();
-  }
-}, []);
-
-  const products = [
+   const products = [
     { id: 1, title: 'Edição 49 - 1988', price: 39.90, image: '/images/edicao49.jpg', description: 'Edição histórica com poster exclusivo' },
     { id: 2, title: 'Edição 27', price: 39.90, image: '/images/edicao27.jpg', description: 'Os segredos ufológicos do Pentágono' },
     { id: 3, title: 'Edição Atual', price: 39.90, image: '/images/edicaoatual.png', description: 'Um novo tempo se inicia!' },
   ];
 
-  const addToCart = (product: any) => {
+     const addToCart = (product: any) => {
     setCart(prev => {
       const exists = prev.find(item => item.id === product.id);
       if (exists) {
@@ -64,12 +53,25 @@ useEffect(() => {
   const getTotal = () => cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const getItemCount = () => cart.reduce((sum, item) => sum + item.quantity, 0);
 
+  // Limpeza de cache
+useEffect(() => {
+  // se já tem ?cleared=1, não faz nada
+  if (window.location.search.includes('cleared=1')) return;
+
+  // limpa tudo e recarrega adicionando o flag na URL para evitar loop
+  localStorage.clear();
+  sessionStorage.clear();
+
+  const url = new URL(window.location.href);
+  url.searchParams.set('cleared', '1');
+  // substitui a entrada do histórico (sem criar outra) e recarrega
+  window.location.replace(url.toString());
+}, []);
+
   useEffect(() => {
   const checkAuth = async () => {
-    console.log('🔍 Verificando autenticação...');
-    
+       
     const { data: { session } } = await supabase.auth.getSession();
-    console.log('Sessão:', session?.user?.email);
     
     if (session?.user) {
       setUser(session.user);
@@ -85,7 +87,7 @@ useEffect(() => {
   checkAuth();
   
   const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-    console.log('Auth event:', event);
+    
     if (session?.user) {
       setUser(session.user);
       const admin = await isUserAdmin(session.user.id);
@@ -110,7 +112,7 @@ useEffect(() => {
       setUser(data.user);
       const admin = await isUserAdmin(data.user.id);
       setIsAdmin(admin);
-      console.log('🔴 DEBUG - setIsAdmin sendo chamado com valor:', admin);
+      
       setShowLoginModal(false);
       setLoginEmail('');
       setLoginPassword('');
