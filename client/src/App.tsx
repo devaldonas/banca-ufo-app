@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase, isUserAdmin } from './lib/supabase';
 import AdminPanel from './components/AdminPanel'; // Adicione esta linha
 
+
 function App() {
   const [activeTab, setActiveTab] = useState<'loja' | 'anunciante' | 'jornaleiro'>('loja');
   const [step, setStep] = useState<'loja' | 'formato' | 'endereco' | 'pagamento'>('loja');
@@ -28,6 +29,17 @@ function App() {
 
   const preco = formato === 'fisico' ? 39.90 : 19.90;
 
+  // Forçar recarregamento se o cache estiver velho
+useEffect(() => {
+  const lastVisit = localStorage.getItem('banca_ufo_version');
+  const currentVersion = '2.0.0';
+  
+  if (!lastVisit || lastVisit !== currentVersion) {
+    localStorage.setItem('banca_ufo_version', currentVersion);
+    window.location.reload();
+  }
+}, []);
+
   const products = [
     { id: 1, title: 'Edição 49 - 1988', price: 39.90, image: '/images/edicao49.jpg', description: 'Edição histórica com poster exclusivo' },
     { id: 2, title: 'Edição 27', price: 39.90, image: '/images/edicao27.jpg', description: 'Os segredos ufológicos do Pentágono' },
@@ -53,28 +65,39 @@ function App() {
   const getItemCount = () => cart.reduce((sum, item) => sum + item.quantity, 0);
 
   useEffect(() => {
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      setUser(session?.user || null);
-      if (session?.user) {
-        const admin = await isUserAdmin(session.user.id);
-        setIsAdmin(admin);
-        console.log('🔴 DEBUG - setIsAdmin sendo chamado com valor:', admin);
-      }
-    });
+  const checkAuth = async () => {
+    console.log('🔍 Verificando autenticação...');
     
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      setUser(session?.user || null);
-      if (session?.user) {
-        const admin = await isUserAdmin(session.user.id);
-        setIsAdmin(admin);
-        console.log('🔴 DEBUG - setIsAdmin sendo chamado com valor:', admin);
-      } else {
-        setIsAdmin(false);
-      }
-    });
+    const { data: { session } } = await supabase.auth.getSession();
+    console.log('Sessão:', session?.user?.email);
     
-    return () => subscription.unsubscribe();
-  }, []);
+    if (session?.user) {
+      setUser(session.user);
+      const admin = await isUserAdmin(session.user.id);
+      console.log('Admin detectado:', admin);
+      setIsAdmin(admin);
+    } else {
+      setUser(null);
+      setIsAdmin(false);
+    }
+  };
+  
+  checkAuth();
+  
+  const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    console.log('Auth event:', event);
+    if (session?.user) {
+      setUser(session.user);
+      const admin = await isUserAdmin(session.user.id);
+      setIsAdmin(admin);
+    } else {
+      setUser(null);
+      setIsAdmin(false);
+    }
+  });
+  
+  return () => subscription.unsubscribe();
+}, []);
 
  const handleLogin = async (e: React.FormEvent) => {
   e.preventDefault();

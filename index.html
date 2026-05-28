@@ -3,6 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- ANTI-CACHE - Forçar sempre carregar versão mais recente -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    
     <title>Banca UFO - Revista Brasileira de Ufologia</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -22,13 +28,11 @@
         position: relative;
       }
 
-      /* Estrelas piscantes */
       @keyframes twinkle {
         0%, 100% { opacity: 0.3; }
         50% { opacity: 1; }
       }
 
-      /* Camada de estrelas */
       body::before {
         content: '';
         position: fixed;
@@ -67,7 +71,6 @@
         font-family: 'Orbitron', monospace;
       }
 
-      /* Estilo para as abas - SEM FUNDO BRANCO */
       .aba-ativa {
         background: rgba(255, 255, 255, 0.15);
         border: 1px solid rgba(255, 255, 255, 0.3);
@@ -85,7 +88,6 @@
         color: white;
       }
 
-      /* Cards estilo glass */
       .card-glass {
         background: rgba(255, 255, 255, 0.05);
         backdrop-filter: blur(10px);
