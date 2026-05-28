@@ -250,31 +250,21 @@ if (showAdmin && isAdmin) {
   if (step === 'loja' && activeTab === 'loja') {
     return (
       <div style={{ background: 'radial-gradient(ellipse at bottom, #030c1a 0%, #010308 100%)', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-        {/* Header da Loja */}
+       {/* Header da Loja */}
 <div style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', padding: '20px 24px' }}>
-  {/* Logo centralizada com BANCA no canto esquerdo */}
+  {/* Logo centralizada com BANCA no canto superior esquerdo */}
   <div style={{ display: 'flex', justifyContent: 'center', position: 'relative' }}>
     <div style={{ position: 'relative', display: 'inline-block' }}>
-      {/* Texto BANCA no canto superior esquerdo da logo */}
-      <div style={{ position: 'absolute', top: '-20px', left: '-10px' }}>
-        <span style={{ fontSize: '36px', color: 'rgba(255,255,255,0.5)', letterSpacing: '3px', fontWeight: 'bold' }}>BANCA</span>
+      {/* Texto BANCA acima e à esquerda da logo */}
+      <div style={{ position: 'absolute', top: '-6px', left: '0' }}>
+        <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', letterSpacing: '2px', fontWeight: 'bold' }}>BANCA</span>
       </div>
+      
+      {/* Logo imagem */}
       <img 
-        src="/public/images/logo.png" 
-        alt="Logo UFO" 
-        style={{ height: '170px', width: 'auto', objectFit: 'contain' }} 
-        onError={(e) => {
-          e.currentTarget.style.display = 'none';
-          const parent = e.currentTarget.parentElement;
-          if (parent) {
-            const text = document.createElement('span');
-            text.style.fontSize = '24px';
-            text.style.fontWeight = 'bold';
-            text.style.color = '#00d4ff';
-            text.innerHTML = 'UFO';
-            parent.appendChild(text);
-          }
-        }}
+        src="/images/logo3.png" 
+        alt="Banca UFO" 
+        style={{ height: '60px', width: 'auto', objectFit: 'contain' }} 
       />
     </div>
   </div>
@@ -283,15 +273,15 @@ if (showAdmin && isAdmin) {
   <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', alignItems: 'center', marginTop: '16px' }}>
     <button style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: 'rgba(255,255,255,0.6)' }}>🔍</button>
     
+    <button onClick={() => setIsCartOpen(true)} style={{ position: 'relative', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: 'white' }}>
+      🛒 {getItemCount() > 0 && <span style={{ position: 'absolute', top: '-8px', right: '-12px', background: '#ff4444', borderRadius: '50%', width: '18px', height: '18px', fontSize: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{getItemCount()}</span>}
+    </button>
+    
     {isAdmin && (
       <button onClick={() => setShowAdmin(true)} style={{ padding: '8px 20px', background: '#00d4ff', border: 'none', borderRadius: '30px', color: '#0a0a1a', cursor: 'pointer', fontWeight: 'bold' }}>
         ADMIN
       </button>
     )}
-    
-    <button onClick={() => setIsCartOpen(true)} style={{ position: 'relative', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: 'white' }}>
-      🛒 {getItemCount() > 0 && <span style={{ position: 'absolute', top: '-8px', right: '-12px', background: '#ff4444', borderRadius: '50%', width: '18px', height: '18px', fontSize: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{getItemCount()}</span>}
-    </button>
     
     {user ? (
       <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
@@ -303,7 +293,6 @@ if (showAdmin && isAdmin) {
     )}
   </div>
 </div>
-
         {/* Conteúdo */}
         <div style={{ flex: 1, padding: '40px 24px' }}>
           {/* Capa */}
@@ -341,7 +330,7 @@ if (showAdmin && isAdmin) {
           <div style={{ marginTop: '60px' }}>
             <h3 style={{ fontSize: '18px', fontWeight: 'bold', textAlign: 'center', background: 'linear-gradient(135deg, #00d4ff, #0088ff, #00d4ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', marginBottom: '24px' }}>✦ EDIÇÕES ANTERIORES ✦</h3>
             <div style={{ display: 'flex', overflowX: 'auto', gap: '24px', paddingBottom: '16px' }}>
-              {products.slice(0, 4).map(p => (
+              {products.slice(0, 3).map(p => (
                 <div key={p.id} style={{ flex: '0 0 280px', background: 'rgba(10, 20, 35, 0.5)', borderRadius: '16px', padding: '20px', textAlign: 'center' }}>
                  <img src={p.image} alt={p.title} style={{ width: '100%', height: '200px', objectFit: 'contain', borderRadius: '12px', marginBottom: '16px' }} />
                   <h4 style={{ color: 'white', marginBottom: '8px' }}>{p.title}</h4>
@@ -353,8 +342,7 @@ if (showAdmin && isAdmin) {
                 </div>
               ))}
               <div style={{ flex: '0 0 280px', background: 'rgba(10, 20, 35, 0.5)', borderRadius: '16px', padding: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', minHeight: '320px' }}>
-                <span style={{ fontSize: '48px', opacity: 0.5 }}>🛸</span>
-                <p style={{ color: 'rgba(255,255,255,0.4)' }}>Em breve</p>
+                
               </div>
             </div>
           </div>
@@ -452,42 +440,58 @@ if (showAdmin && isAdmin) {
   if (activeTab === 'anunciante') {
     return (
       <div style={{ background: 'radial-gradient(ellipse at bottom, #030c1a 0%, #010308 100%)', minHeight: '100vh' }}>
-        {/* Header */}
-        <div style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <img src="/images/logo.png" alt="Logo" style={{ width: '40px', height: '40px', objectFit: 'contain' }} />
-            <div><h1 style={{ fontSize: '20px', fontWeight: 'bold', margin: 0, color: 'white' }}>BANCA UFO</h1><p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', margin: 0 }}>Revista Brasileira de Ufologia</p></div>
-          </div>
-          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-            <button style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: 'rgba(255,255,255,0.6)' }}>🔍</button>
-            
-             {/* Botão ADMIN */}
-            {isAdmin && (
-              <button onClick={() => setShowAdmin(true)} style={{ padding: '8px 20px', background: '#00d4ff', border: 'none', borderRadius: '30px', color: '#0a0a1a', cursor: 'pointer', fontWeight: 'bold' }}>👑 ADMIN</button>
-            )}
-            
-            {user ? (
-              <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                <span style={{ color: 'white', fontSize: '14px' }}>👋 {user.email?.split('@')[0]}</span>
-                <button onClick={handleLogout} style={{ padding: '8px 20px', background: '#333', border: 'none', borderRadius: '30px', color: 'white', cursor: 'pointer' }}>SAIR</button>
-              </div>
-            ) : (
-              <button onClick={() => setShowLoginModal(true)} style={{ padding: '8px 24px', background: '#e60000', border: 'none', borderRadius: '30px', color: 'white', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 0 10px #ff0000' }}>ENTRAR</button>
-            )}
-          </div>
-        </div>
+       {/* Header do Anunciante */}
+<div style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', padding: '20px 24px' }}>
+  {/* Logo centralizada com BANCA no canto superior esquerdo */}
+  <div style={{ display: 'flex', justifyContent: 'center', position: 'relative' }}>
+    <div style={{ position: 'relative', display: 'inline-block' }}>
+      {/* Texto BANCA acima e à esquerda da logo */}
+      <div style={{ position: 'absolute', top: '-16px', left: '0' }}>
+        <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', letterSpacing: '2px', fontWeight: 'bold' }}>BANCA</span>
+      </div>
+      
+      {/* Logo imagem */}
+      <img 
+        src="/images/logo3.png" 
+        alt="Banca UFO" 
+        style={{ height: '60px', width: 'auto', objectFit: 'contain' }} 
+      />
+    </div>
+  </div>
+  
+  {/* Botões e usuário */}
+  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', alignItems: 'center', marginTop: '16px' }}>
+    <button style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: 'rgba(255,255,255,0.6)' }}>🔍</button>
+    
+    {/* Botão ADMIN */}
+    {isAdmin && (
+      <button onClick={() => setShowAdmin(true)} style={{ padding: '8px 20px', background: '#00d4ff', border: 'none', borderRadius: '30px', color: '#0a0a1a', cursor: 'pointer', fontWeight: 'bold' }}>
+        ADMIN
+      </button>
+    )}
+    
+    {user ? (
+      <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+        <span style={{ color: 'white', fontSize: '14px' }}>{user.email?.split('@')[0]}</span>
+        <button onClick={handleLogout} style={{ padding: '8px 20px', background: '#333', borderRadius: '30px', color: 'white', cursor: 'pointer' }}>SAIR</button>
+      </div>
+    ) : (
+      <button onClick={() => setShowLoginModal(true)} style={{ padding: '8px 24px', background: '#e60000', borderRadius: '30px', color: 'white', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 0 10px #ff0000' }}>ENTRAR</button>
+    )}
+  </div>
+</div>
 
-        {/* Título */}
-        <div style={{ textAlign: 'center', padding: '32px 24px 16px' }}>
-          <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: '#00d4ff', marginBottom: '8px' }}>Área do Anunciante</h2>
-          <p style={{ color: 'rgba(255,255,255,0.5)' }}>Publicidade na Banca UFO</p>
-        </div>
+{/* Título */}
+<div style={{ textAlign: 'center', padding: '32px 24px 16px' }}>
+  <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: '#00d4ff', marginBottom: '8px' }}>Area do Anunciante</h2>
+  <p style={{ color: 'rgba(255,255,255,0.5)' }}>Publicidade na Banca UFO</p>
+</div>
 
-        {/* Botões Media Kit / Meu Painel */}
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', padding: '0 24px 24px' }}>
-          <button onClick={() => setShowPanel('mediakit')} style={{ background: showPanel === 'mediakit' ? '#00d4ff' : 'transparent', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '30px', padding: '8px 28px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer', color: showPanel === 'mediakit' ? '#0a0a1a' : '#fff' }}>Media Kit</button>
-          <button onClick={() => setShowPanel('mypanel')} style={{ background: showPanel === 'mypanel' ? '#00d4ff' : 'transparent', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '30px', padding: '8px 28px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer', color: showPanel === 'mypanel' ? '#0a0a1a' : '#fff' }}>Meu Painel</button>
-        </div>
+{/* Botões Media Kit / Meu Painel */}
+<div style={{ display: 'flex', justifyContent: 'center', gap: '20px', padding: '0 24px 24px' }}>
+  <button onClick={() => setShowPanel('mediakit')} style={{ background: showPanel === 'mediakit' ? '#00d4ff' : 'transparent', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '30px', padding: '8px 28px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer', color: showPanel === 'mediakit' ? '#0a0a1a' : '#fff' }}>Media Kit</button>
+  <button onClick={() => setShowPanel('mypanel')} style={{ background: showPanel === 'mypanel' ? '#00d4ff' : 'transparent', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '30px', padding: '8px 28px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer', color: showPanel === 'mypanel' ? '#0a0a1a' : '#fff' }}>Meu Painel</button>
+</div>
 
         {/* Conteúdo */}
         <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px 24px' }}>
@@ -655,50 +659,65 @@ if (showAdmin && isAdmin) {
   if (activeTab === 'jornaleiro') {
     return (
       <div style={{ background: 'radial-gradient(ellipse at bottom, #030c1a 0%, #010308 100%)', minHeight: '100vh' }}>
-        {/* Header */}
-        <div style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <img src="/images/logo.png" alt="Logo" style={{ width: '40px', height: '40px', objectFit: 'contain' }} />
-            <div><h1 style={{ fontSize: '20px', fontWeight: 'bold', margin: 0, color: 'white' }}>BANCA UFO</h1><p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', margin: 0 }}>Revista Brasileira de Ufologia</p></div>
-          </div>
-          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-            <button style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: 'rgba(255,255,255,0.6)' }}>🔍</button>
-            
-            {/* Botão ADMIN */}
-            {isAdmin && (
-              <button onClick={() => setShowAdmin(true)} style={{ padding: '8px 20px', background: '#00d4ff', border: 'none', borderRadius: '30px', color: '#0a0a1a', cursor: 'pointer', fontWeight: 'bold' }}>👑 ADMIN</button>
-            )}
-            
-            {user ? (
-              <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                <span style={{ color: 'white', fontSize: '14px' }}>👋 {user.email?.split('@')[0]}</span>
-                <button onClick={handleLogout} style={{ padding: '8px 20px', background: '#333', border: 'none', borderRadius: '30px', color: 'white', cursor: 'pointer' }}>SAIR</button>
-              </div>
-            ) : (
-              <button onClick={() => setShowLoginModal(true)} style={{ padding: '8px 24px', background: '#e60000', border: 'none', borderRadius: '30px', color: 'white', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 0 10px #ff0000' }}>ENTRAR</button>
-            )}
-          </div>
-        </div>
+       {/* Header do Jornaleiro */}
+<div style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', padding: '20px 24px' }}>
+  {/* Logo centralizada com BANCA no canto superior esquerdo */}
+  <div style={{ display: 'flex', justifyContent: 'center', position: 'relative' }}>
+    <div style={{ position: 'relative', display: 'inline-block' }}>
+      {/* Texto BANCA acima e à esquerda da logo */}
+      <div style={{ position: 'absolute', top: '-16px', left: '0' }}>
+        <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', letterSpacing: '2px', fontWeight: 'bold' }}>BANCA</span>
+      </div>
+      
+      {/* Logo imagem */}
+      <img 
+        src="/images/logo3.png" 
+        alt="Banca UFO" 
+        style={{ height: '60px', width: 'auto', objectFit: 'contain' }} 
+      />
+    </div>
+  </div>
+  
+  {/* Botões e usuário */}
+  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', alignItems: 'center', marginTop: '16px' }}>
+    <button style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: 'rgba(255,255,255,0.6)' }}>🔍</button>
+    
+    {/* Botão ADMIN */}
+    {isAdmin && (
+      <button onClick={() => setShowAdmin(true)} style={{ padding: '8px 20px', background: '#00d4ff', border: 'none', borderRadius: '30px', color: '#0a0a1a', cursor: 'pointer', fontWeight: 'bold' }}>
+        ADMIN
+      </button>
+    )}
+    
+    {user ? (
+      <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+        <span style={{ color: 'white', fontSize: '14px' }}>{user.email?.split('@')[0]}</span>
+        <button onClick={handleLogout} style={{ padding: '8px 20px', background: '#333', borderRadius: '30px', color: 'white', cursor: 'pointer' }}>SAIR</button>
+      </div>
+    ) : (
+      <button onClick={() => setShowLoginModal(true)} style={{ padding: '8px 24px', background: '#e60000', borderRadius: '30px', color: 'white', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 0 10px #ff0000' }}>ENTRAR</button>
+    )}
+  </div>
+</div>
 
-        {/* Título */}
-        <div style={{ textAlign: 'center', padding: '32px 24px 16px' }}>
-          <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: '#00ff88', marginBottom: '8px' }}>Área do Jornaleiro</h2>
-          <p style={{ color: 'rgba(255,255,255,0.5)' }}>Rede de Distribuição UFO</p>
-        </div>
+{/* Título */}
+<div style={{ textAlign: 'center', padding: '32px 24px 16px' }}>
+  <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: '#00ff88', marginBottom: '8px' }}>Area do Jornaleiro</h2>
+  <p style={{ color: 'rgba(255,255,255,0.5)' }}>Rede de Distribuicao UFO</p>
+</div>
 
-        {/* Botões Sobre / Meu Painel */}
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', padding: '0 24px 24px' }}>
-          <button onClick={() => setShowJornPanel('sobre')} style={{ background: showJornPanel === 'sobre' ? '#00ff88' : 'transparent', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '30px', padding: '8px 32px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer', color: showJornPanel === 'sobre' ? '#0a0a1a' : '#fff' }}>Sobre</button>
-          <button onClick={() => setShowJornPanel('mypanel')} style={{ background: showJornPanel === 'mypanel' ? '#00ff88' : 'transparent', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '30px', padding: '8px 32px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer', color: showJornPanel === 'mypanel' ? '#0a0a1a' : '#fff' }}>Meu Painel</button>
-        </div>
-
+{/* Botões Sobre / Meu Painel */}
+<div style={{ display: 'flex', justifyContent: 'center', gap: '20px', padding: '0 24px 24px' }}>
+  <button onClick={() => setShowJornPanel('sobre')} style={{ background: showJornPanel === 'sobre' ? '#00ff88' : 'transparent', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '30px', padding: '8px 32px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer', color: showJornPanel === 'sobre' ? '#0a0a1a' : '#fff' }}>Sobre</button>
+  <button onClick={() => setShowJornPanel('mypanel')} style={{ background: showJornPanel === 'mypanel' ? '#00ff88' : 'transparent', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '30px', padding: '8px 32px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer', color: showJornPanel === 'mypanel' ? '#0a0a1a' : '#fff' }}>Meu Painel</button>
+</div>
         {/* Conteúdo */}
         <div style={{ maxWidth: '900px', margin: '0 auto', padding: '20px 24px' }}>
           {showJornPanel === 'sobre' && (
             <div style={{ background: 'rgba(10, 20, 35, 0.6)', backdropFilter: 'blur(12px)', borderRadius: '20px', padding: '32px', border: '1px solid rgba(255,255,255,0.08)' }}>
               <div style={{ textAlign: 'center', marginBottom: '32px' }}>
                 <h3 style={{ fontSize: '22px', fontWeight: 'bold', marginBottom: '8px', color: 'white' }}>Seja um Jornaleiro UFO</h3>
-                <p style={{ color: 'rgba(255,255,255,0.6)', maxWidth: '500px', margin: '0 auto' }}>Faça parte da maior rede de distribuição de revistas de ficção científica e fenômenos do Brasil.</p>
+                <p style={{ color: 'rgba(255,255,255,0.6)', maxWidth: '500px', margin: '0 auto' }}> Faça parte da maior rede de distribuição de revistas de fenômenos e ciência moderna.</p>
               </div>
 
               {/* Cards de Benefícios */}
