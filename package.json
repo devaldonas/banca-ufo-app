@@ -8,6 +8,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@mercadopago/sdk-js": "^0.0.3",
     "@supabase/supabase-js": "^2.106.1",
     "express": "^5.2.1",
     "mercadopago": "^3.0.0",

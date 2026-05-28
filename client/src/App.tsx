@@ -26,14 +26,16 @@ function App() {
   const [showPanel, setShowPanel] = useState<'mediakit' | 'mypanel'>('mediakit');
   const [showJornPanel, setShowJornPanel] = useState<'sobre' | 'mypanel'>('sobre');
   const [isAdmin, setIsAdmin] = useState(false); // Adicione esta linha
+  const [pixData, setPixData] = useState<{ qrCode: string; copiaCola: string; id: number } | null>(null);
 
   const preco = formato === 'fisico' ? 39.90 : 19.90;
 
    const products = [
-    { id: 1, title: 'Edição 49 - 1988', price: 39.90, image: '/images/edicao49.jpg', description: 'Edição histórica com poster exclusivo' },
-    { id: 2, title: 'Edição 27', price: 39.90, image: '/images/edicao27.jpg', description: 'Os segredos ufológicos do Pentágono' },
-    { id: 3, title: 'Edição Atual', price: 39.90, image: '/images/edicaoatual.png', description: 'Um novo tempo se inicia!' },
-  ];
+  { id: 1, title: 'Edicao 296 - Abril 2025', price: 39.90, image: '/images/edicao296.jpeg', description: 'O Fardo do contatado e o Ceticismo Ignorante' },
+  { id: 2, title: 'Edicao 298 - Outubro 2025', price: 39.90, image: '/images/edicao298.jpeg', description: 'Chupa-Cabra no Piaui' },
+  { id: 3, title: 'Edicao 300 - Dezembro 2025', price: 39.90, image: '/images/edicao300.jpeg', description: 'Chegamos aos 300' },
+  { id: 4, title: 'Edicao Atual', price: 39.90, image: '/images/edicaoatual.png', description: 'Um novo tempo se inicia!' },
+];
 
      const addToCart = (product: any) => {
     setCart(prev => {
@@ -52,6 +54,62 @@ function App() {
   };
   const getTotal = () => cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const getItemCount = () => cart.reduce((sum, item) => sum + item.quantity, 0);
+
+// ============================================
+// FUNÇÃO DO PIX (colocar depois dos states)
+// ============================================
+const handlePagarComPix = async () => {
+  const valor = formato === 'fisico' ? 39.90 : 19.90;
+  const descricao = `UFO Magazine - ${formato === 'fisico' ? 'Física' : 'Digital'}`;
+  
+  try {
+    const response = await fetch('https://api.mercadopago.com/v1/payments', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${import.meta.env.VITE_MERCADO_PAGO_ACCESS_TOKEN}`
+      },
+      body: JSON.stringify({
+        transaction_amount: valor,
+        description: descricao,
+        payment_method_id: 'pix',
+        payer: {
+          email: user?.email || 'cliente@bancaufo.com.br',
+          first_name: 'Cliente',
+          last_name: 'UFO'
+        }
+      })
+    });
+    
+    const data = await response.json();
+    console.log('Resposta do Mercado Pago:', data);
+    
+    if (data.status === 'pending' && data.point_of_interaction) {
+      setPixData({
+        qrCode: `data:image/png;base64,${data.point_of_interaction.transaction_data.qr_code_base64}`,
+        copiaCola: data.point_of_interaction.transaction_data.qr_code,
+        id: data.id
+      });
+      setPixModal(true);
+    } else {
+      alert('❌ Erro ao gerar PIX. Tente novamente.');
+    }
+  } catch (error) {
+    console.error('Erro ao gerar PIX:', error);
+    alert('❌ Erro ao conectar com Mercado Pago. Tente novamente.');
+  }
+};
+
+  // Função para comprar edição atual
+const comprarEdicaoAtual = () => {
+  setStep('formato');
+};
+  // Função para compra direta (sem carrinho)
+  const comprarEdicao = (edicao: any) => {
+  // Salvar qual edição está comprando
+  localStorage.setItem('edicao_comprando', JSON.stringify(edicao));
+  setStep('formato');
+};
 
   // Limpeza de cache
 useEffect(() => {
@@ -192,29 +250,59 @@ if (showAdmin && isAdmin) {
   if (step === 'loja' && activeTab === 'loja') {
     return (
       <div style={{ background: 'radial-gradient(ellipse at bottom, #030c1a 0%, #010308 100%)', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-        {/* Header */}
-        <div style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <img src="/images/logo.png" alt="Logo" style={{ width: '40px', height: '40px', objectFit: 'contain' }} />
-            <div><h1 style={{ fontSize: '20px', fontWeight: 'bold', color: 'white' }}>BANCA UFO</h1><p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>Revista Brasileira de Ufologia</p></div>
-          </div>
-          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-            <button style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: 'rgba(255,255,255,0.6)' }}>🔍</button>
-             {/* Botão ADMIN */}
-            {isAdmin && (
-              <button onClick={() => setShowAdmin(true)} style={{ padding: '8px 20px', background: '#00d4ff', border: 'none', borderRadius: '30px', color: '#0a0a1a', cursor: 'pointer', fontWeight: 'bold' }}>👑 ADMIN</button>
-            )}
-            <button onClick={() => setIsCartOpen(true)} style={{ position: 'relative', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: 'white' }}>🛒 {getItemCount() > 0 && <span style={{ position: 'absolute', top: '-8px', right: '-12px', background: '#ff4444', borderRadius: '50%', width: '18px', height: '18px', fontSize: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{getItemCount()}</span>}</button>
-            {user ? (
-              <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                <span style={{ color: 'white', fontSize: '14px' }}>👋 {user.email?.split('@')[0]}</span>
-                <button onClick={handleLogout} style={{ padding: '8px 20px', background: '#333', borderRadius: '30px', color: 'white', cursor: 'pointer' }}>SAIR</button>
-              </div>
-            ) : (
-              <button onClick={() => setShowLoginModal(true)} style={{ padding: '8px 24px', background: '#e60000', borderRadius: '30px', color: 'white', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 0 10px #ff0000' }}>ENTRAR</button>
-            )}
-          </div>
-        </div>
+        {/* Header da Loja */}
+<div style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', padding: '20px 24px' }}>
+  {/* Logo centralizada com BANCA no canto esquerdo */}
+  <div style={{ display: 'flex', justifyContent: 'center', position: 'relative' }}>
+    <div style={{ position: 'relative', display: 'inline-block' }}>
+      {/* Texto BANCA no canto superior esquerdo da logo */}
+      <div style={{ position: 'absolute', top: '-20px', left: '-10px' }}>
+        <span style={{ fontSize: '36px', color: 'rgba(255,255,255,0.5)', letterSpacing: '3px', fontWeight: 'bold' }}>BANCA</span>
+      </div>
+      <img 
+        src="/public/images/logo.png" 
+        alt="Logo UFO" 
+        style={{ height: '170px', width: 'auto', objectFit: 'contain' }} 
+        onError={(e) => {
+          e.currentTarget.style.display = 'none';
+          const parent = e.currentTarget.parentElement;
+          if (parent) {
+            const text = document.createElement('span');
+            text.style.fontSize = '24px';
+            text.style.fontWeight = 'bold';
+            text.style.color = '#00d4ff';
+            text.innerHTML = 'UFO';
+            parent.appendChild(text);
+          }
+        }}
+      />
+    </div>
+  </div>
+  
+  {/* Botões e usuário */}
+  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', alignItems: 'center', marginTop: '16px' }}>
+    <button style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: 'rgba(255,255,255,0.6)' }}>🔍</button>
+    
+    {isAdmin && (
+      <button onClick={() => setShowAdmin(true)} style={{ padding: '8px 20px', background: '#00d4ff', border: 'none', borderRadius: '30px', color: '#0a0a1a', cursor: 'pointer', fontWeight: 'bold' }}>
+        ADMIN
+      </button>
+    )}
+    
+    <button onClick={() => setIsCartOpen(true)} style={{ position: 'relative', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: 'white' }}>
+      🛒 {getItemCount() > 0 && <span style={{ position: 'absolute', top: '-8px', right: '-12px', background: '#ff4444', borderRadius: '50%', width: '18px', height: '18px', fontSize: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{getItemCount()}</span>}
+    </button>
+    
+    {user ? (
+      <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+        <span style={{ color: 'white', fontSize: '14px' }}>{user.email?.split('@')[0]}</span>
+        <button onClick={handleLogout} style={{ padding: '8px 20px', background: '#333', borderRadius: '30px', color: 'white', cursor: 'pointer' }}>SAIR</button>
+      </div>
+    ) : (
+      <button onClick={() => setShowLoginModal(true)} style={{ padding: '8px 24px', background: '#e60000', borderRadius: '30px', color: 'white', fontWeight: 'bold', cursor: 'pointer' }}>ENTRAR</button>
+    )}
+  </div>
+</div>
 
         {/* Conteúdo */}
         <div style={{ flex: 1, padding: '40px 24px' }}>
@@ -246,16 +334,16 @@ if (showAdmin && isAdmin) {
               <div><p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>Digital</p><p style={{ fontSize: '24px', fontWeight: 'bold', color: 'white' }}>R$ 19,90</p></div>
             </div>
 
-            <button onClick={() => setStep('formato')} style={{ width: '100%', padding: '14px', background: '#ff4444', color: 'white', border: 'none', borderRadius: '40px', fontWeight: 'bold', cursor: 'pointer' }}>COMPRAR EDIÇÃO</button>
+            <button onClick={() => comprarEdicaoAtual()} style={{ width: '100%', padding: '14px', background: '#ff4444', color: 'white', border: 'none', borderRadius: '40px', fontWeight: 'bold', cursor: 'pointer' }}>COMPRAR EDIÇÃO</button>
           </div>
 
           {/* Edições Anteriores - Carrossel */}
           <div style={{ marginTop: '60px' }}>
             <h3 style={{ fontSize: '18px', fontWeight: 'bold', textAlign: 'center', background: 'linear-gradient(135deg, #00d4ff, #0088ff, #00d4ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', marginBottom: '24px' }}>✦ EDIÇÕES ANTERIORES ✦</h3>
             <div style={{ display: 'flex', overflowX: 'auto', gap: '24px', paddingBottom: '16px' }}>
-              {products.slice(0, 2).map(p => (
+              {products.slice(0, 4).map(p => (
                 <div key={p.id} style={{ flex: '0 0 280px', background: 'rgba(10, 20, 35, 0.5)', borderRadius: '16px', padding: '20px', textAlign: 'center' }}>
-                  <img src={p.image} alt={p.title} style={{ width: '100%', height: '200px', objectFit: 'cover', borderRadius: '12px', marginBottom: '16px' }} />
+                 <img src={p.image} alt={p.title} style={{ width: '100%', height: '200px', objectFit: 'contain', borderRadius: '12px', marginBottom: '16px' }} />
                   <h4 style={{ color: 'white', marginBottom: '8px' }}>{p.title}</h4>
                   <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '12px', marginBottom: '16px' }}>{p.description}</p>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -773,6 +861,146 @@ if (showAdmin && isAdmin) {
       </div>
     );
   }
+
+  // Tela de Formato
+if (step === 'formato') {
+  return (
+    <div style={{ background: 'radial-gradient(ellipse at bottom, #030c1a 0%, #010308 100%)', minHeight: '100vh' }}>
+      <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '40px 24px' }}>
+        <div style={{ background: 'rgba(10, 20, 35, 0.6)', backdropFilter: 'blur(12px)', borderRadius: '20px', padding: '32px', border: '1px solid rgba(255,255,255,0.08)' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '24px', textAlign: 'center', background: 'linear-gradient(135deg, #00d4ff, #0088ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>📖 Escolha o Formato</h2>
+          
+          <div style={{ display: 'flex', gap: '20px', marginBottom: '32px', flexWrap: 'wrap' }}>
+            <button 
+              onClick={() => setFormato('fisico')} 
+              style={{ flex: 1, minWidth: '200px', padding: '24px', border: formato === 'fisico' ? '2px solid #ff4444' : '1px solid rgba(255,255,255,0.15)', background: formato === 'fisico' ? 'rgba(255,68,68,0.1)' : 'rgba(255,255,255,0.03)', borderRadius: '20px', cursor: 'pointer', transition: 'all 0.2s' }}
+            >
+              <div style={{ fontSize: '48px', marginBottom: '12px' }}>📖</div>
+              <div style={{ fontWeight: 'bold', fontSize: '18px', color: formato === 'fisico' ? '#ff4444' : 'white', marginBottom: '8px' }}>Físico</div>
+              <div style={{ fontSize: '28px', fontWeight: 'bold', color: 'white' }}>R$ 39,90</div>
+              <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', marginTop: '8px' }}>+ frete</div>
+            </button>
+            
+            <button 
+              onClick={() => setFormato('digital')} 
+              style={{ flex: 1, minWidth: '200px', padding: '24px', border: formato === 'digital' ? '2px solid #ff4444' : '1px solid rgba(255,255,255,0.15)', background: formato === 'digital' ? 'rgba(255,68,68,0.1)' : 'rgba(255,255,255,0.03)', borderRadius: '20px', cursor: 'pointer', transition: 'all 0.2s' }}
+            >
+              <div style={{ fontSize: '48px', marginBottom: '12px' }}>💻</div>
+              <div style={{ fontWeight: 'bold', fontSize: '18px', color: formato === 'digital' ? '#ff4444' : 'white', marginBottom: '8px' }}>Digital</div>
+              <div style={{ fontSize: '28px', fontWeight: 'bold', color: 'white' }}>R$ 19,90</div>
+              <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', marginTop: '8px' }}>acesso imediato</div>
+            </button>
+          </div>
+
+          <button 
+            onClick={() => {
+              if (formato === 'fisico') {
+                setStep('endereco');
+              } else {
+                setStep('pagamento');
+              }
+            }} 
+            style={{ width: '100%', padding: '16px', background: '#ff4444', color: 'white', border: 'none', borderRadius: '40px', fontWeight: 'bold', fontSize: '18px', cursor: 'pointer' }}
+          >
+            CONTINUAR - R$ {formato === 'fisico' ? '39,90' : '19,90'}
+          </button>
+          
+          <button 
+            onClick={() => { setStep('loja'); setActiveTab('loja'); }} 
+            style={{ width: '100%', padding: '14px', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '40px', color: 'white', cursor: 'pointer', marginTop: '16px' }}
+          >
+            ← Voltar para Loja
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+// Tela de Endereço
+if (step === 'endereco') {
+  return (
+    <div style={{ background: 'radial-gradient(ellipse at bottom, #030c1a 0%, #010308 100%)', minHeight: '100vh' }}>
+      <div style={{ maxWidth: '800px', margin: '0 auto', padding: '40px 24px' }}>
+        <div style={{ background: 'rgba(10, 20, 35, 0.6)', backdropFilter: 'blur(12px)', borderRadius: '20px', padding: '32px', border: '1px solid rgba(255,255,255,0.08)' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '24px', textAlign: 'center', background: 'linear-gradient(135deg, #00d4ff, #0088ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>📍 Endereço de Entrega</h2>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <input type="text" placeholder="CEP" value={endereco.cep} onChange={(e) => setEndereco({...endereco, cep: e.target.value})} style={inputStyle} />
+            <input type="text" placeholder="Rua / Avenida" value={endereco.rua} onChange={(e) => setEndereco({...endereco, rua: e.target.value})} style={inputStyle} />
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <input type="text" placeholder="Número" value={endereco.numero} onChange={(e) => setEndereco({...endereco, numero: e.target.value})} style={inputStyle} />
+              <input type="text" placeholder="Complemento" value={endereco.complemento} onChange={(e) => setEndereco({...endereco, complemento: e.target.value})} style={inputStyle} />
+            </div>
+            <input type="text" placeholder="Bairro" value={endereco.bairro} onChange={(e) => setEndereco({...endereco, bairro: e.target.value})} style={inputStyle} />
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <input type="text" placeholder="Cidade" value={endereco.cidade} onChange={(e) => setEndereco({...endereco, cidade: e.target.value})} style={inputStyle} />
+              <input type="text" placeholder="UF" value={endereco.uf} onChange={(e) => setEndereco({...endereco, uf: e.target.value})} style={inputStyle} />
+            </div>
+          </div>
+          
+          <button onClick={() => setStep('pagamento')} style={{ width: '100%', padding: '16px', background: '#ff4444', color: 'white', border: 'none', borderRadius: '40px', fontWeight: 'bold', fontSize: '18px', cursor: 'pointer', marginTop: '32px' }}>
+            CONTINUAR PARA PAGAMENTO
+          </button>
+          
+          <button onClick={() => setStep('formato')} style={{ width: '100%', padding: '14px', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '40px', color: 'white', cursor: 'pointer', marginTop: '16px' }}>
+            ← Voltar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Tela de Pagamento
+if (step === 'pagamento') {
+  const valorFinal = formato === 'fisico' ? 39.90 : 19.90;
+  
+  return (
+    <div style={{ background: 'radial-gradient(ellipse at bottom, #030c1a 0%, #010308 100%)', minHeight: '100vh' }}>
+      <div style={{ maxWidth: '600px', margin: '0 auto', padding: '40px 24px' }}>
+        <div style={{ background: 'rgba(10, 20, 35, 0.6)', backdropFilter: 'blur(12px)', borderRadius: '20px', padding: '32px', border: '1px solid rgba(255,255,255,0.08)' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '8px', textAlign: 'center', background: 'linear-gradient(135deg, #00d4ff, #0088ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>💳 Pagamento</h2>
+          <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.5)', marginBottom: '24px' }}>
+            {formato === 'fisico' ? 'Revista Física' : 'Revista Digital'}
+          </p>
+          
+          <div style={{ border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '20px', marginBottom: '24px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+              <span style={{ fontSize: '32px' }}>💚</span>
+              <div>
+                <div style={{ fontWeight: 'bold', color: 'white' }}>PIX</div>
+                <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)' }}>QR Code + Cópia e Cola</div>
+              </div>
+            </div>
+            
+            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+              <span>Subtotal</span>
+              <span>R$ {valorFinal.toFixed(2)}</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0' }}>
+              <span>Frete (PAC)</span>
+              <span>R$ 0,00</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '16px 0', borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: '8px' }}>
+              <span style={{ fontWeight: 'bold' }}>Total</span>
+              <span style={{ fontWeight: 'bold', fontSize: '20px', color: '#00ff88' }}>R$ {valorFinal.toFixed(2)}</span>
+            </div>
+          </div>
+          
+          <button onClick={() => setPixModal(true)} style={{ width: '100%', padding: '16px', background: '#00ff88', color: '#030c1a', border: 'none', borderRadius: '40px', fontWeight: 'bold', fontSize: '18px', cursor: 'pointer' }}>
+            PAGAR COM PIX
+          </button>
+          
+          <button onClick={() => formato === 'fisico' ? setStep('endereco') : setStep('formato')} style={{ width: '100%', padding: '14px', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '40px', color: 'white', cursor: 'pointer', marginTop: '16px' }}>
+            ← Voltar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
   return null;
 }
 
