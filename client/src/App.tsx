@@ -105,22 +105,30 @@ function App() {
   }
 };
 
-const handleLogout = async () => { 
+const handleLogout = async () => {
   try {
+    // 1. Limpar o estado do Supabase
     await supabase.auth.signOut();
-    // Limpar estados
+    
+    // 2. Limpar todos os estados do React
     setUser(null);
     setIsAdmin(false);
     setShowAdmin(false);
     setShowLoginModal(false);
     setCart([]);
     setIsCartOpen(false);
-    // Pequeno delay para garantir que os estados foram atualizados
-    setTimeout(() => {
-      window.location.reload();
-    }, 100);
+    
+    // 3. Limpar o cache do navegador (Supabase storage)
+    localStorage.removeItem('supabase.auth.token');
+    sessionStorage.clear();
+    
+    // 4. Redirecionar para a página inicial
+    window.location.href = '/';
   } catch (error) {
     console.error('Erro no logout:', error);
+    // Fallback: limpar tudo e recarregar
+    localStorage.clear();
+    sessionStorage.clear();
     window.location.reload();
   }
 };
