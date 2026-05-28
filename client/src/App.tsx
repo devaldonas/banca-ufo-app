@@ -31,10 +31,10 @@ function App() {
   const preco = formato === 'fisico' ? 39.90 : 19.90;
 
    const products = [
-  { id: 1, title: 'Edicao 296 - Abril 2025', price: 39.90, image: '/images/edicao296.jpeg', description: 'O Fardo do contatado e o Ceticismo Ignorante' },
-  { id: 2, title: 'Edicao 298 - Outubro 2025', price: 39.90, image: '/images/edicao298.jpeg', description: 'Chupa-Cabra no Piaui' },
-  { id: 3, title: 'Edicao 300 - Dezembro 2025', price: 39.90, image: '/images/edicao300.jpeg', description: 'Chegamos aos 300' },
-  { id: 4, title: 'Edicao Atual', price: 39.90, image: '/images/edicaoatual.png', description: 'Um novo tempo se inicia!' },
+  { id: 1, title: 'Edição 296 - Abril 2025', price: 39.90, image: '/images/edicao296.jpeg', description: 'O Fardo do contatado e o Ceticismo Ignorante' },
+  { id: 2, title: 'Edição 298 - Outubro 2025', price: 39.90, image: '/images/edicao298.jpeg', description: 'Chupa-Cabra no Piaui' },
+  { id: 3, title: 'Edição 300 - Dezembro 2025', price: 39.90, image: '/images/edicao300.jpeg', description: 'Chegamos aos 300' },
+  { id: 4, title: 'Edição Atual', price: 39.90, image: '/images/edicaoatual.png', description: 'Um novo tempo se inicia!' },
 ];
 
      const addToCart = (product: any) => {
@@ -308,10 +308,10 @@ if (showAdmin && isAdmin) {
               <h3 style={{ fontSize: '14px', fontWeight: 'bold', textAlign: 'center', background: 'linear-gradient(135deg, #00d4ff, #0088ff, #00d4ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>✦ EDIÇÃO ATUAL ✦</h3>
               <p style={{ fontWeight: 'bold', textAlign: 'center', color: 'white', margin: '12px 0' }}>DESTAQUES DESTA EDIÇÃO:</p>
               <ul style={{ color: 'rgba(255,255,255,0.6)', maxWidth: '400px', margin: '0 auto' }}>
-                <li>Entrevista exclusiva com ex-piloto da NASA</li>
-                <li>Os 10 avistamentos mais intrigantes de 2025</li>
-                <li>Tecnologia alienígena: fato ou ficção?</li>
-                <li>A nova corrida espacial privada</li>
+                <li>A revista UFO integra o Ecossistema Dakila Pesquisas</li>
+                <li>Fazenda de seres humanos</li>
+                <li>O maior segredo da história chegando ao fim?</li>
+                <li>Dossiê especial sobre ufologia indígena</li>
               </ul>
             </div>
 
@@ -381,30 +381,38 @@ if (showAdmin && isAdmin) {
         )}
         
 
-                {/* Footer */}
-        <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '16px 24px', textAlign: 'center', background: 'rgba(3, 12, 26, 0.95)', backdropFilter: 'blur(10px)', position: 'sticky', bottom: 0, width: '100%', zIndex: 50 }}>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '32px', marginBottom: '8px', alignItems: 'center' }}>
-            <img 
-              src="/images/lojavermelha.png" 
-              alt="LOJA" 
-              style={{ height: '32px', width: 'auto', cursor: 'pointer' }}
-              onClick={() => { setActiveTab('loja'); setStep('loja'); }}
-            />
-            <img 
-              src="/images/anunciantecinza.png" 
-              alt="ANUNCIANTE" 
-              style={{ height: '32px', width: 'auto', cursor: 'pointer' }}
-              onClick={() => setActiveTab('anunciante')}
-            />
-            <img 
-              src="/images/jornaleirocinza.png" 
-              alt="JORNALEIRO" 
-              style={{ height: '32px', width: 'auto', cursor: 'pointer' }}
-              onClick={() => setActiveTab('jornaleiro')}
-            />
-          </div>
-          <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.2)' }}>Banca UFO - Revista Brasileira de Ufologia</p>
-        </div>
+               {/* Footer */}
+<div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '16px 24px', textAlign: 'center', background: 'rgba(3, 12, 26, 0.95)', backdropFilter: 'blur(10px)', position: 'sticky', bottom: 0, width: '100%', zIndex: 50 }}>
+  <div style={{ display: 'flex', justifyContent: 'center', gap: '40px', marginBottom: '8px', alignItems: 'center' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer' }} onClick={() => { setActiveTab('loja'); setStep('loja'); }}>
+      <img 
+        src="/images/lojavermelha.png" 
+        alt="LOJA" 
+        style={{ height: '28px', width: 'auto' }}
+      />
+      <span style={{ fontSize: '10px', color: '#ff4444', marginTop: '4px', fontWeight: 'bold' }}>LOJA</span>
+    </div>
+    
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer' }} onClick={() => setActiveTab('anunciante')}>
+      <img 
+        src="/images/anunciantecinza.png" 
+        alt="ANUNCIANTE" 
+        style={{ height: '28px', width: 'auto' }}
+      />
+      <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)', marginTop: '4px' }}>ANUNCIANTE</span>
+    </div>
+    
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer' }} onClick={() => setActiveTab('jornaleiro')}>
+      <img 
+        src="/images/jornaleirocinza.png" 
+        alt="JORNALEIRO" 
+        style={{ height: '28px', width: 'auto' }}
+      />
+      <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)', marginTop: '4px' }}>JORNALEIRO</span>
+    </div>
+  </div>
+  <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.2)' }}>Banca UFO - Revista Brasileira de Ufologia</p>
+</div>
 
 <style>{`@keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }`}</style>
 
@@ -444,8 +452,7 @@ if (showAdmin && isAdmin) {
     <div style={{ position: 'relative', display: 'inline-block' }}>
       {/* Texto BANCA acima e à esquerda da logo */}
       <div style={{ position: 'absolute', top: '-4px', left: '0' }}>
-        <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', letterSpacing: '2px', fontWeight: 'bold' }}>BANCA</span>
-      </div>
+              </div>
       
       {/* Logo imagem */}
       <img 
@@ -603,29 +610,37 @@ if (showAdmin && isAdmin) {
         </div>
 
                         {/* Footer */}
-        <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '16px 24px', textAlign: 'center', background: 'rgba(3, 12, 26, 0.95)', backdropFilter: 'blur(10px)', position: 'sticky', bottom: 0, width: '100%', zIndex: 50 }}>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '32px', marginBottom: '8px', alignItems: 'center' }}>
-            <img 
-              src="/images/lojacinza.png" 
-              alt="LOJA" 
-              style={{ height: '32px', width: 'auto', cursor: 'pointer' }}
-              onClick={() => { setActiveTab('loja'); setStep('loja'); }}
-            />
-            <img 
-              src="/images/anuncianteazul.png" 
-              alt="ANUNCIANTE" 
-              style={{ height: '32px', width: 'auto', cursor: 'pointer' }}
-              onClick={() => setActiveTab('anunciante')}
-            />
-            <img 
-              src="/images/jornaleirocinza.png" 
-              alt="JORNALEIRO" 
-              style={{ height: '32px', width: 'auto', cursor: 'pointer' }}
-              onClick={() => setActiveTab('jornaleiro')}
-            />
-          </div>
-          <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.2)' }}>Banca UFO - Revista Brasileira de Ufologia</p>
-        </div>
+<div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '16px 24px', textAlign: 'center', background: 'rgba(3, 12, 26, 0.95)', backdropFilter: 'blur(10px)', position: 'sticky', bottom: 0, width: '100%', zIndex: 50 }}>
+  <div style={{ display: 'flex', justifyContent: 'center', gap: '40px', marginBottom: '8px', alignItems: 'center' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer' }} onClick={() => { setActiveTab('loja'); setStep('loja'); }}>
+      <img 
+        src="/images/lojacinza.png" 
+        alt="LOJA" 
+        style={{ height: '28px', width: 'auto' }}
+      />
+      <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)', marginTop: '4px' }}>LOJA</span>
+    </div>
+    
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer' }} onClick={() => setActiveTab('anunciante')}>
+      <img 
+        src="/images/anuncianteazul.png" 
+        alt="ANUNCIANTE" 
+        style={{ height: '28px', width: 'auto' }}
+      />
+      <span style={{ fontSize: '10px', color: '#00d4ff', marginTop: '4px', fontWeight: 'bold' }}>ANUNCIANTE</span>
+    </div>
+    
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer' }} onClick={() => setActiveTab('jornaleiro')}>
+      <img 
+        src="/images/jornaleirocinza.png" 
+        alt="JORNALEIRO" 
+        style={{ height: '28px', width: 'auto' }}
+      />
+      <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)', marginTop: '4px' }}>JORNALEIRO</span>
+    </div>
+  </div>
+  <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.2)' }}>Banca UFO - Revista Brasileira de Ufologia</p>
+</div>
 
         {/* Modal de Login */}
         {showLoginModal && (
@@ -663,8 +678,7 @@ if (showAdmin && isAdmin) {
     <div style={{ position: 'relative', display: 'inline-block' }}>
       {/* Texto BANCA acima e à esquerda da logo */}
       <div style={{ position: 'absolute', top: '-4px', left: '0' }}>
-        <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', letterSpacing: '2px', fontWeight: 'bold' }}>BANCA</span>
-      </div>
+            </div>
       
       {/* Logo imagem */}
       <img 
@@ -820,29 +834,37 @@ if (showAdmin && isAdmin) {
         </div>
 
                   {/* Footer */}
-        <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '16px 24px', textAlign: 'center', background: 'rgba(3, 12, 26, 0.95)', backdropFilter: 'blur(10px)', position: 'sticky', bottom: 0, width: '100%', zIndex: 50 }}>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '32px', marginBottom: '8px', alignItems: 'center' }}>
-            <img 
-              src="/images/lojacinza.png" 
-              alt="LOJA" 
-              style={{ height: '32px', width: 'auto', cursor: 'pointer' }}
-              onClick={() => { setActiveTab('loja'); setStep('loja'); }}
-            />
-            <img 
-              src="/images/anunciantecinza.png" 
-              alt="ANUNCIANTE" 
-              style={{ height: '32px', width: 'auto', cursor: 'pointer' }}
-              onClick={() => setActiveTab('anunciante')}
-            />
-            <img 
-              src="/images/jornaleiroverde.png" 
-              alt="JORNALEIRO" 
-              style={{ height: '32px', width: 'auto', cursor: 'pointer' }}
-              onClick={() => setActiveTab('jornaleiro')}
-            />
-          </div>
-          <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.2)' }}>Banca UFO - Revista Brasileira de Ufologia</p>
-        </div>
+<div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '16px 24px', textAlign: 'center', background: 'rgba(3, 12, 26, 0.95)', backdropFilter: 'blur(10px)', position: 'sticky', bottom: 0, width: '100%', zIndex: 50 }}>
+  <div style={{ display: 'flex', justifyContent: 'center', gap: '40px', marginBottom: '8px', alignItems: 'center' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer' }} onClick={() => { setActiveTab('loja'); setStep('loja'); }}>
+      <img 
+        src="/images/lojacinza.png" 
+        alt="LOJA" 
+        style={{ height: '28px', width: 'auto' }}
+      />
+      <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)', marginTop: '4px' }}>LOJA</span>
+    </div>
+    
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer' }} onClick={() => setActiveTab('anunciante')}>
+      <img 
+        src="/images/anunciantecinza.png" 
+        alt="ANUNCIANTE" 
+        style={{ height: '28px', width: 'auto' }}
+      />
+      <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)', marginTop: '4px' }}>ANUNCIANTE</span>
+    </div>
+    
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer' }} onClick={() => setActiveTab('jornaleiro')}>
+      <img 
+        src="/images/jornaleiroverde.png" 
+        alt="JORNALEIRO" 
+        style={{ height: '28px', width: 'auto' }}
+      />
+      <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)', marginTop: '4px' }}>JORNALEIRO</span>
+    </div>
+  </div>
+  <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.2)' }}>Banca UFO - Revista Brasileira de Ufologia</p>
+</div>
 
         <style>{`
           @media (max-width: 768px) {
